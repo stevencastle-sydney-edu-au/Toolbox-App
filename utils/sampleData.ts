@@ -214,7 +214,7 @@ export const goals = [
     description: 'Add avocado to my lunch',
     category: 'Food Exposure',
     targetDate: 'May 3, 2025',
-    status: 'In Progress',
+    status: 'IN_PROGRESS',
     steps: [
       {
         id: '1-1',
@@ -244,7 +244,7 @@ export const goals = [
     description: 'Go to a local café and order a meal',
     category: 'Social Eating',
     targetDate: 'May 4, 2025',
-    status: 'Not Started',
+    status: 'NOT_STARTED',
     steps: [
       {
         id: '2-1',
@@ -274,7 +274,7 @@ export const goals = [
     description: 'Reduce mirror checking behaviors',
     category: 'Body Image',
     targetDate: 'May 10, 2025',
-    status: 'In Progress',
+    status: 'IN_PROGRESS',
     steps: [
       {
         id: '3-1',
