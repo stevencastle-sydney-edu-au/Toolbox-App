@@ -27,31 +27,6 @@ export default function GoalsScreen() {
         return colors.warning;
     }
   };
-  
-  const renderGoalProgress = (goal: typeof goals[0]) => {
-    const completedSteps = goal.steps.filter(step => step.completed).length;
-    const totalSteps = goal.steps.length;
-    const progressPercentage = (completedSteps / totalSteps) * 100;
-    
-    return (
-      <View style={styles.progressContainer}>
-        <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
-          <View 
-            style={[
-              styles.progressFill, 
-              { 
-                backgroundColor: colors.success,
-                width: `${progressPercentage}%` 
-              }
-            ]} 
-          />
-        </View>
-        <Text style={[styles.progressText, { color: colors.muted }]}>
-          {completedSteps}/{totalSteps} steps completed
-        </Text>
-      </View>
-    );
-  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -163,7 +138,22 @@ export default function GoalsScreen() {
                     {goal.description}
                   </Text>
                   
-                  {renderGoalProgress(goal)}
+                  <View style={styles.progressContainer}>
+                    <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
+                      <View 
+                        style={[
+                          styles.progressFill, 
+                          { 
+                            backgroundColor: colors.success,
+                            width: `${(goal.steps.filter(step => step.completed).length / goal.steps.length) * 100}%` 
+                          }
+                        ]} 
+                      />
+                    </View>
+                    <Text style={[styles.progressText, { color: colors.muted }]}>
+                      {goal.steps.filter(step => step.completed).length}/{goal.steps.length} steps completed
+                    </Text>
+                  </View>
                   
                   <View style={styles.stepsContainer}>
                     {goal.steps.map((step) => (
@@ -232,7 +222,22 @@ export default function GoalsScreen() {
                     {goal.description}
                   </Text>
                   
-                  {renderGoalProgress(goal)}
+                  <View style={styles.progressContainer}>
+                    <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
+                      <View 
+                        style={[
+                          styles.progressFill, 
+                          { 
+                            backgroundColor: colors.success,
+                            width: `${(goal.steps.filter(step => step.completed).length / goal.steps.length) * 100}%` 
+                          }
+                        ]} 
+                      />
+                    </View>
+                    <Text style={[styles.progressText, { color: colors.muted }]}>
+                      {goal.steps.filter(step => step.completed).length}/{goal.steps.length} steps completed
+                    </Text>
+                  </View>
                   
                   <Pressable style={[styles.startButton, { backgroundColor: colors.primary + '20' }]}>
                     <Text style={[styles.startButtonText, { color: colors.primary }]}>
