@@ -7,6 +7,7 @@ import {
   useColorScheme,
   Pressable,
   SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { 
@@ -33,12 +34,15 @@ export default function HomeScreen() {
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState<'recent' | 'upcoming'>('recent');
   
+  // Get current date in YYYY-MM-DD format
+  const today = new Date().toISOString().split('T')[0];
+  
   // Get user data and stats
   const { data: userData, loading: userLoading } = useQuery(GET_USER);
   
   // Get recent activities for today
-  const { data: activitiesData, loading: activitiesLoading } = useQuery(GET_RECENT_ACTIVITIES, {
-    variables: { date: '2025-05-02' }, // TODO: Use actual current date
+  const { data: activitiesData, loading: activitiesLoading, error: activitiesError } = useQuery(GET_RECENT_ACTIVITIES, {
+    variables: { date: today },
   });
   
   // Get upcoming items
@@ -62,7 +66,18 @@ export default function HomeScreen() {
   if (userLoading || activitiesLoading || upcomingLoading) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={[styles.loadingText, { color: colors.text }]}>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (activitiesError) {
+    return (
+      <View style={[styles.errorContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.error }]}>
+          Error loading activities. Please try again.
+        </Text>
       </View>
     );
   }
@@ -78,7 +93,12 @@ export default function HomeScreen() {
             Hello, {userData?.me?.name || 'User'}
           </Text>
           <Text style={[styles.date, { color: colors.muted }]}>
-            Friday, May 2, 2025
+            {new Date().toLocaleDateString('en-US', { 
+              weekday: 'long',
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric'
+            })}
           </Text>
         </View>
         
@@ -155,28 +175,40 @@ export default function HomeScreen() {
           
           {selectedTab === 'recent' ? (
             <View style={styles.activityList}>
-              {activitiesData?.recentActivities.map((activity) => (
-                <ActivityItem 
-                  key={activity.id}
-                  title={activity.title}
-                  time={activity.time}
-                  type={activity.type.toLowerCase() as any}
-                  description={activity.description}
-                />
-              ))}
+              {activitiesData?.recentActivities?.length > 0 ? (
+                activitiesData.recentActivities.map((activity) => (
+                  <ActivityItem 
+                    key={activity.id}
+                    title={activity.title}
+                    time={activity.time}
+                    type={activity.type.toLowerCase() as any}
+                    description={activity.description}
+                  />
+                ))
+              ) : (
+                <Text style={[styles.emptyText, { color: colors.muted }]}>
+                  No recent activities for today
+                </Text>
+              )}
             </View>
           ) : (
             <View style={styles.upcomingList}>
-              {upcomingData?.upcomingItems.map((item) => (
-                <UpcomingCard
-                  key={item.id}
-                  title={item.title}
-                  date={item.date}
-                  time={item.time}
-                  type={item.type.toLowerCase() as any}
-                  onPress={handleUpcomingCardPress}
-                />
-              ))}
+              {upcomingData?.upcomingItems?.length > 0 ? (
+                upcomingData.upcomingItems.map((item) => (
+                  <UpcomingCard
+                    key={item.id}
+                    title={item.title}
+                    date={item.date}
+                    time={item.time}
+                    type={item.type.toLowerCase() as any}
+                    onPress={handleUpcomingCardPress}
+                  />
+                ))
+              ) : (
+                <Text style={[styles.emptyText, { color: colors.muted }]}>
+                  No upcoming items scheduled
+                </Text>
+              )}
             </View>
           )}
         </View>
@@ -251,6 +283,24 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
+    marginTop: 12,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+    textAlign: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+    textAlign: 'center',
+    padding: 20,
   },
   scrollContent: {
     paddingHorizontal: 16,
