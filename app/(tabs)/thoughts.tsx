@@ -10,8 +10,10 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { CirclePlus as PlusCircle, Search, Filter, ChevronRight, ChartBar as BarChart2 } from 'lucide-react-native';
+import { useQuery, useMutation } from '@apollo/client';
+import { GET_THOUGHT_LOGS } from '@/graphql/operations/thoughts';
+import { ADD_THOUGHT_LOG } from '@/graphql/operations/thoughts';
 import Colors from '@/constants/Colors';
-import { thoughtLogs } from '@/utils/sampleData';
 import AddThoughtModal from '@/components/AddThoughtModal';
 
 export default function ThoughtsScreen() {
@@ -19,17 +21,22 @@ export default function ThoughtsScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddThoughtModalVisible, setIsAddThoughtModalVisible] = useState(false);
-  
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
 
-  const handleAddThought = (thoughtData: {
+  // Fetch thought logs
+  const { data, loading, error } = useQuery(GET_THOUGHT_LOGS);
+
+  // Add thought log mutation
+  const [addThoughtLog] = useMutation(ADD_THOUGHT_LOG, {
+    refetchQueries: [{ query: GET_THOUGHT_LOGS }],
+  });
+
+  // Filter thought logs based on search query
+  const filteredLogs = data?.thoughtLogs.filter(log => 
+    log.situation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    log.automaticThought.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
+
+  const handleAddThought = async (thoughtData: {
     situation: string;
     automaticThought: string;
     emotions: string[];
@@ -37,10 +44,40 @@ export default function ThoughtsScreen() {
     distortionTypes: string[];
     rationalResponse: string;
   }) => {
-    // Here you would typically save the thought data to your backend
-    console.log('New thought data:', thoughtData);
-    setIsAddThoughtModalVisible(false);
+    try {
+      await addThoughtLog({
+        variables: {
+          input: thoughtData,
+        },
+      });
+      setIsAddThoughtModalVisible(false);
+    } catch (error) {
+      console.error('Error adding thought log:', error);
+    }
   };
+
+  if (loading) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.loadingText, { color: colors.text }]}>Loading thoughts...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.errorContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.error }]}>
+          Error loading thoughts. Please try again.
+        </Text>
+        <Pressable
+          style={[styles.retryButton, { backgroundColor: colors.primary }]}
+          onPress={() => window.location.reload()}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -86,7 +123,7 @@ export default function ThoughtsScreen() {
             Recent Thought Logs
           </Text>
           
-          {thoughtLogs.map((log) => (
+          {filteredLogs.map((log) => (
             <Pressable 
               key={log.id}
               style={[
@@ -96,7 +133,11 @@ export default function ThoughtsScreen() {
               <View style={styles.thoughtHeader}>
                 <View>
                   <Text style={[styles.thoughtDate, { color: colors.muted }]}>
-                    {formatDate(log.date)} • {log.time}
+                    {new Date(log.date).toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                    })} • {log.time}
                   </Text>
                   <Text style={[styles.thoughtSituation, { color: colors.text }]}>
                     {log.situation}
@@ -325,6 +366,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  retryButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+  },
   header: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -343,6 +415,7 @@ const styles = StyleSheet.create({
     height: 40,
     marginLeft: 8,
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
   },
   filterButton: {
     width: 40,
@@ -372,11 +445,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFF',
     marginBottom: 8,
+    fontFamily: 'Inter-SemiBold',
   },
   insightDescription: {
     fontSize: 14,
     color: 'rgba(255,255,255,0.9)',
     marginBottom: 16,
+    fontFamily: 'Inter-Regular',
   },
   insightButton: {
     flexDirection: 'row',
@@ -391,6 +466,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#FFF',
     marginRight: 4,
+    fontFamily: 'Inter-SemiBold',
   },
   insightIcon: {
     justifyContent: 'center',
@@ -404,6 +480,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 16,
+    fontFamily: 'Inter-SemiBold',
   },
   thoughtCard: {
     borderRadius: 12,
@@ -422,10 +499,12 @@ const styles = StyleSheet.create({
   thoughtDate: {
     fontSize: 12,
     marginBottom: 4,
+    fontFamily: 'Inter-Regular',
   },
   thoughtSituation: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   emotionBadge: {
     paddingHorizontal: 8,
@@ -436,6 +515,7 @@ const styles = StyleSheet.create({
   emotionText: {
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   thoughtContent: {
     padding: 16,
@@ -443,10 +523,12 @@ const styles = StyleSheet.create({
   thoughtLabel: {
     fontSize: 14,
     marginBottom: 4,
+    fontFamily: 'Inter-Regular',
   },
   thoughtText: {
     fontSize: 16,
     marginBottom: 8,
+    fontFamily: 'Inter-Regular',
   },
   emotionTags: {
     flexDirection: 'row',
@@ -463,6 +545,7 @@ const styles = StyleSheet.create({
   emotionTagText: {
     fontSize: 12,
     fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
   },
   distortionTags: {
     flexDirection: 'row',
@@ -479,6 +562,7 @@ const styles = StyleSheet.create({
   distortionTagText: {
     fontSize: 12,
     fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
   },
   afterEmotionBadge: {
     alignSelf: 'flex-start',
@@ -490,6 +574,7 @@ const styles = StyleSheet.create({
   afterEmotionText: {
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   exerciseSection: {
     marginBottom: 24,
@@ -513,6 +598,7 @@ const styles = StyleSheet.create({
   exerciseIconText: {
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: 'Inter-Bold',
   },
   exerciseContent: {
     flex: 1,
@@ -521,9 +607,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
+    fontFamily: 'Inter-SemiBold',
   },
   exerciseDescription: {
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
   },
   addButtonContainer: {
     position: 'absolute',
@@ -546,5 +634,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+    fontFamily: 'Inter-SemiBold',
   },
 });
