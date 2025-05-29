@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -39,7 +39,6 @@ export default function GoalsScreen() {
     targetDate: string;
     steps: { description: string }[];
   }) => {
-    // Here you would typically save the goal data to your backend
     console.log('New goal data:', goalData);
     setIsAddGoalModalVisible(false);
   };
@@ -52,7 +51,6 @@ export default function GoalsScreen() {
     steps: string[];
     coping_strategies: string[];
   }) => {
-    // Here you would typically save the exposure data to your backend
     console.log('New exposure data:', exposureData);
     setIsAddExposureModalVisible(false);
   };
@@ -69,11 +67,11 @@ export default function GoalsScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.tabContainer}>
         <Pressable
+          onPress={() => setActiveTab('goals')}
           style={[
             styles.tab,
             activeTab === 'goals' && { backgroundColor: colors.success + '20' }
-          ]}
-          onPress={() => setActiveTab('goals')}>
+          ]}>
           <Text 
             style={[
               styles.tabText,
@@ -84,11 +82,11 @@ export default function GoalsScreen() {
         </Pressable>
         
         <Pressable
+          onPress={() => setActiveTab('exposures')}
           style={[
             styles.tab,
             activeTab === 'exposures' && { backgroundColor: colors.accent + '20' }
-          ]}
-          onPress={() => setActiveTab('exposures')}>
+          ]}>
           <Text 
             style={[
               styles.tabText,
@@ -99,11 +97,11 @@ export default function GoalsScreen() {
         </Pressable>
         
         <Pressable
+          onPress={() => setActiveTab('check-ins')}
           style={[
             styles.tab,
             activeTab === 'check-ins' && { backgroundColor: colors.warning + '20' }
-          ]}
-          onPress={() => setActiveTab('check-ins')}>
+          ]}>
           <Text 
             style={[
               styles.tabText,
@@ -113,7 +111,7 @@ export default function GoalsScreen() {
           </Text>
         </Pressable>
       </View>
-      
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
