@@ -1,32 +1,10 @@
-import { Tabs, useRouter } from 'expo-router';
-import { useColorScheme, Image, View, ActivityIndicator } from 'react-native';
+import { Tabs } from 'expo-router';
+import { useColorScheme } from 'react-native';
 import { House, Utensils, Calendar, Brain, Target } from 'lucide-react-native';
-import { useQuery } from '@apollo/client';
-import { GET_USER } from '@/graphql/operations/user';
 import Colors from '@/constants/Colors';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const router = useRouter();
-  const { data, loading, error } = useQuery(GET_USER, {
-    fetchPolicy: 'network-only', // Don't use cache for auth checks
-  });
-
-  // Handle authentication check and redirection in useEffect
-  React.useEffect(() => {
-    if (!loading && (!data?.me || error)) {
-      router.replace('/(auth)/login');
-    }
-  }, [loading, data?.me, error, router]);
-
-  // Show loading indicator while checking auth status
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].tint} />
-      </View>
-    );
-  }
 
   return (
     <Tabs
@@ -54,16 +32,6 @@ export default function TabLayout() {
           fontWeight: '600',
           fontSize: 18,
         },
-        headerTitle: () => (
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Image
-              source={require('@/assets/images/ioilogo.png')}
-              style={{ width: 200, height: 100 }}
-              resizeMode="contain"
-            />
-          </View>
-        ),
-        headerTitleAlign: 'center',
       }}>
       <Tabs.Screen
         name="index"
