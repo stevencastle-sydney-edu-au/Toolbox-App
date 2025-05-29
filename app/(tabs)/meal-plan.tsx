@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -19,40 +19,51 @@ export default function MealPlanScreen() {
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [isCreatePlanModalVisible, setIsCreatePlanModalVisible] = useState(false);
   
-  const selectedDay = mealPlans[selectedDayIndex];
+  const selectedDay = useMemo(() => mealPlans[selectedDayIndex], [selectedDayIndex]);
   
-  const handlePreviousDay = () => {
+  const handlePreviousDay = useCallback(() => {
     if (selectedDayIndex > 0) {
-      setSelectedDayIndex(selectedDayIndex - 1);
+      setSelectedDayIndex(prev => prev - 1);
     }
-  };
+  }, [selectedDayIndex]);
   
-  const handleNextDay = () => {
+  const handleNextDay = useCallback(() => {
     if (selectedDayIndex < mealPlans.length - 1) {
-      setSelectedDayIndex(selectedDayIndex + 1);
+      setSelectedDayIndex(prev => prev + 1);
     }
-  };
+  }, [selectedDayIndex, mealPlans.length]);
   
-  const handleCreatePlan = (planData: { date: string; meals: any[] }) => {
-    // Here you would typically save the plan data to your backend
+  const handleCreatePlan = useCallback((planData: { date: string; meals: any[] }) => {
     console.log('New plan data:', planData);
     setIsCreatePlanModalVisible(false);
-  };
+  }, []);
+  
+  const handleOpenModal = useCallback(() => {
+    setIsCreatePlanModalVisible(true);
+  }, []);
+  
+  const handleCloseModal = useCallback(() => {
+    setIsCreatePlanModalVisible(false);
+  }, []);
   
   // Generate week days
-  const weekDays = [];
-  const today = new Date('2025-05-05');
-  
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() + i);
+  const weekDays = useMemo(() => {
+    const days = [];
+    const today = new Date('2025-05-05');
     
-    weekDays.push({
-      dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
-      dayNumber: date.getDate(),
-      date: date.toISOString().split('T')[0],
-    });
-  }
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      
+      days.push({
+        dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        dayNumber: date.getDate(),
+        date: date.toISOString().split('T')[0],
+      });
+    }
+    
+    return days;
+  }, []);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -179,7 +190,7 @@ export default function MealPlanScreen() {
         
         <Pressable 
           style={[styles.addMealButton, { borderColor: colors.border }]}
-          onPress={() => setIsCreatePlanModalVisible(true)}>
+          onPress={handleOpenModal}>
           <PlusCircle size={20} color={colors.primary} />
           <Text style={[styles.addMealText, { color: colors.primary }]}>
             Add Meal
@@ -240,7 +251,7 @@ export default function MealPlanScreen() {
       <View style={[styles.addButtonContainer, { backgroundColor: colors.background }]}>
         <Pressable 
           style={[styles.addButton, { backgroundColor: colors.primary }]}
-          onPress={() => setIsCreatePlanModalVisible(true)}>
+          onPress={handleOpenModal}>
           <PlusCircle size={20} color="#FFF" />
           <Text style={styles.addButtonText}>Create New Plan</Text>
         </Pressable>
@@ -248,7 +259,7 @@ export default function MealPlanScreen() {
 
       <CreatePlanModal
         visible={isCreatePlanModalVisible}
-        onClose={() => setIsCreatePlanModalVisible(false)}
+        onClose={handleCloseModal}
         onSave={handleCreatePlan}
       />
     </SafeAreaView>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -30,10 +30,27 @@ export default function HomeScreen() {
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState<'recent' | 'upcoming'>('recent');
   
-  // Filter to get only today's activities
-  const todayActivities = recentActivities.filter(
-    activity => activity.date === '2025-05-02'
-  );
+  // Memoize filtered activities
+  const todayActivities = useMemo(() => {
+    return recentActivities.filter(
+      activity => activity.date === '2025-05-02'
+    );
+  }, []);
+
+  // Memoize tab selection handler
+  const handleTabSelect = useCallback((tab: 'recent' | 'upcoming') => {
+    setSelectedTab(tab);
+  }, []);
+
+  // Memoize navigation handlers
+  const handleToolPress = useCallback((route: string) => {
+    router.push(route);
+  }, [router]);
+
+  // Memoize card press handler
+  const handleUpcomingCardPress = useCallback(() => {
+    // Handle card press
+  }, []);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -60,28 +77,28 @@ export default function HomeScreen() {
           <View style={styles.toolsGrid}>
             <Pressable 
               style={[styles.toolItem, { backgroundColor: colors.accent }]} 
-              onPress={() => router.push('/food-log')}>
+              onPress={() => handleToolPress('/food-log')}>
               <Utensils color="#FFF" size={24} />
               <Text style={styles.toolText}>Log Food</Text>
             </Pressable>
             
             <Pressable 
               style={[styles.toolItem, { backgroundColor: colors.primary }]} 
-              onPress={() => router.push('/thoughts')}>
+              onPress={() => handleToolPress('/thoughts')}>
               <Brain color="#FFF" size={24} />
               <Text style={styles.toolText}>Thought Log</Text>
             </Pressable>
             
             <Pressable 
               style={[styles.toolItem, { backgroundColor: colors.secondary }]} 
-              onPress={() => router.push('/meal-plan')}>
+              onPress={() => handleToolPress('/meal-plan')}>
               <Calendar color="#FFF" size={24} />
               <Text style={styles.toolText}>Meal Plan</Text>
             </Pressable>
             
             <Pressable 
               style={[styles.toolItem, { backgroundColor: colors.success }]} 
-              onPress={() => router.push('/goals')}>
+              onPress={() => handleToolPress('/goals')}>
               <Target color="#FFF" size={24} />
               <Text style={styles.toolText}>Goals</Text>
             </Pressable>
@@ -95,7 +112,7 @@ export default function HomeScreen() {
                 styles.tab,
                 selectedTab === 'recent' && [styles.activeTab, { borderColor: colors.primary }]
               ]}
-              onPress={() => setSelectedTab('recent')}>
+              onPress={() => handleTabSelect('recent')}>
               <Text 
                 style={[
                   styles.tabText, 
@@ -110,7 +127,7 @@ export default function HomeScreen() {
                 styles.tab,
                 selectedTab === 'upcoming' && [styles.activeTab, { borderColor: colors.primary }]
               ]}
-              onPress={() => setSelectedTab('upcoming')}>
+              onPress={() => handleTabSelect('upcoming')}>
               <Text 
                 style={[
                   styles.tabText, 
@@ -142,7 +159,7 @@ export default function HomeScreen() {
                   date={item.date}
                   time={item.time}
                   type={item.type}
-                  onPress={() => {}}
+                  onPress={handleUpcomingCardPress}
                 />
               ))}
             </View>
@@ -157,7 +174,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Food Journal"
             description="Track your meals and eating patterns"
-            icon={<Utensils color="#FFF\" size={24} />}
+            icon={<Utensils color="#FFF" size={24} />}
             route="/food-log"
             color={colors.accent}
           />
@@ -165,7 +182,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Thought Log"
             description="Record and restructure negative thoughts"
-            icon={<Brain color="#FFF\" size={24} />}
+            icon={<Brain color="#FFF" size={24} />}
             route="/thoughts"
             color={colors.primary}
           />
@@ -173,7 +190,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Meal Planning"
             description="Plan balanced meals for the week"
-            icon={<Calendar color="#FFF\" size={24} />}
+            icon={<Calendar color="#FFF" size={24} />}
             route="/meal-plan"
             color={colors.secondary}
           />
@@ -181,7 +198,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Goals & Exposures"
             description="Set and track recovery goals"
-            icon={<Target color="#FFF\" size={24} />}
+            icon={<Target color="#FFF" size={24} />}
             route="/goals"
             color={colors.success}
           />
@@ -189,7 +206,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Check-in Activities"
             description="Track behaviors and coping strategies"
-            icon={<Clipboard color="#FFF\" size={24} />}
+            icon={<Clipboard color="#FFF" size={24} />}
             route="/goals"
             color={colors.warning}
           />
@@ -197,7 +214,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Self-Care Activities"
             description="Practice compassion and mindfulness"
-            icon={<Smile color="#FFF\" size={24} />}
+            icon={<Smile color="#FFF" size={24} />}
             route="/goals"
             color="#9C27B0"
           />
