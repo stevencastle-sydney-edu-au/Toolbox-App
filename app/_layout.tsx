@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logo: {
-    width: '60%',
-    height: '30%',
+    width: 300,
+    height: 150,
   },
 });
