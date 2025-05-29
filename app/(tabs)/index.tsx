@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -7,7 +7,7 @@ import {
   useColorScheme,
   Pressable,
   SafeAreaView,
-  ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { 
@@ -18,69 +18,19 @@ import {
   Clipboard,
   Smile,
 } from 'lucide-react-native';
-import { useQuery } from '@apollo/client';
-import { GET_USER } from '@/graphql/operations/user';
-import { GET_RECENT_ACTIVITIES } from '@/graphql/operations/activities';
-import { GET_UPCOMING_ITEMS } from '@/graphql/operations/activities';
 import Colors from '@/constants/Colors';
-import ProgressSummary from '@/components/ProgressSummary';
-import ToolboxCard from '@/components/ToolboxCard';
-import ActivityItem from '@/components/ActivityItem';
-import UpcomingCard from '@/components/UpcomingCard';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const router = useRouter();
-  const [selectedTab, setSelectedTab] = useState<'recent' | 'upcoming'>('recent');
-  
-  // Get current date in YYYY-MM-DD format
-  const today = new Date().toISOString().split('T')[0];
-  
-  // Get user data and stats
-  const { data: userData, loading: userLoading } = useQuery(GET_USER);
-  
-  // Get recent activities for today
-  const { data: activitiesData, loading: activitiesLoading, error: activitiesError } = useQuery(GET_RECENT_ACTIVITIES, {
-    variables: { date: today },
-  });
-  
-  // Get upcoming items
-  const { data: upcomingData, loading: upcomingLoading } = useQuery(GET_UPCOMING_ITEMS);
-  
-  // Memoize tab selection handler
-  const handleTabSelect = useCallback((tab: 'recent' | 'upcoming') => {
-    setSelectedTab(tab);
-  }, []);
 
-  // Memoize navigation handlers
-  const handleToolPress = useCallback((route: string) => {
-    router.push(route);
-  }, [router]);
-
-  // Memoize card press handler
-  const handleUpcomingCardPress = useCallback(() => {
-    // Handle card press
-  }, []);
-
-  if (userLoading || activitiesLoading || upcomingLoading) {
-    return (
-      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={[styles.loadingText, { color: colors.text }]}>Loading...</Text>
-      </View>
-    );
-  }
-
-  if (activitiesError) {
-    return (
-      <View style={[styles.errorContainer, { backgroundColor: colors.background }]}>
-        <Text style={[styles.errorText, { color: colors.error }]}>
-          Error loading activities. Please try again.
-        </Text>
-      </View>
-    );
-  }
+  const stats = {
+    daysActive: 14,
+    entriesLogged: 78,
+    goalsCompleted: 8,
+    streak: 5,
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -90,7 +40,7 @@ export default function HomeScreen() {
         
         <View style={styles.header}>
           <Text style={[styles.greeting, { color: colors.text }]}>
-            Hello, {userData?.me?.name || 'User'}
+            Hello, Sarah
           </Text>
           <Text style={[styles.date, { color: colors.muted }]}>
             {new Date().toLocaleDateString('en-US', { 
@@ -101,170 +51,121 @@ export default function HomeScreen() {
             })}
           </Text>
         </View>
-        
-        <ProgressSummary stats={userData?.me?.stats || { daysActive: 0, entriesLogged: 0, goalsCompleted: 0, streak: 0 }} />
+
+        <View style={[styles.statsContainer, { backgroundColor: colors.cardBackground }]}>
+          <Text style={[styles.statsTitle, { color: colors.text }]}>Your Progress</Text>
+          <View style={styles.statsGrid}>
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: colors.primary }]}>{stats.daysActive}</Text>
+              <Text style={[styles.statLabel, { color: colors.muted }]}>Days Active</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: colors.primary }]}>{stats.entriesLogged}</Text>
+              <Text style={[styles.statLabel, { color: colors.muted }]}>Entries</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: colors.success }]}>{stats.goalsCompleted}</Text>
+              <Text style={[styles.statLabel, { color: colors.muted }]}>Goals Met</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: colors.accent }]}>{stats.streak}</Text>
+              <Text style={[styles.statLabel, { color: colors.muted }]}>Day Streak</Text>
+            </View>
+          </View>
+        </View>
         
         <View style={styles.toolboxSection}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Quick Tools
-          </Text>
-          
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Quick Tools</Text>
           <View style={styles.toolsGrid}>
             <Pressable 
               style={[styles.toolItem, { backgroundColor: colors.accent }]} 
-              onPress={() => handleToolPress('/food-log')}>
+              onPress={() => router.push('/food-log')}>
               <Utensils color="#FFF" size={24} />
               <Text style={styles.toolText}>Log Food</Text>
             </Pressable>
-            
             <Pressable 
               style={[styles.toolItem, { backgroundColor: colors.primary }]} 
-              onPress={() => handleToolPress('/thoughts')}>
+              onPress={() => router.push('/thoughts')}>
               <Brain color="#FFF" size={24} />
               <Text style={styles.toolText}>Thought Log</Text>
             </Pressable>
-            
             <Pressable 
               style={[styles.toolItem, { backgroundColor: colors.secondary }]} 
-              onPress={() => handleToolPress('/meal-plan')}>
+              onPress={() => router.push('/meal-plan')}>
               <Calendar color="#FFF" size={24} />
               <Text style={styles.toolText}>Meal Plan</Text>
             </Pressable>
-            
             <Pressable 
               style={[styles.toolItem, { backgroundColor: colors.success }]} 
-              onPress={() => handleToolPress('/goals')}>
+              onPress={() => router.push('/goals')}>
               <Target color="#FFF" size={24} />
               <Text style={styles.toolText}>Goals</Text>
             </Pressable>
           </View>
         </View>
-        
-        <View style={styles.activitySection}>
-          <View style={styles.tabContainer}>
-            <Pressable
-              style={[
-                styles.tab,
-                selectedTab === 'recent' && [styles.activeTab, { borderColor: colors.primary }]
-              ]}
-              onPress={() => handleTabSelect('recent')}>
-              <Text 
-                style={[
-                  styles.tabText, 
-                  { color: selectedTab === 'recent' ? colors.primary : colors.muted }
-                ]}>
-                Recent Activity
-              </Text>
-            </Pressable>
-            
-            <Pressable
-              style={[
-                styles.tab,
-                selectedTab === 'upcoming' && [styles.activeTab, { borderColor: colors.primary }]
-              ]}
-              onPress={() => handleTabSelect('upcoming')}>
-              <Text 
-                style={[
-                  styles.tabText, 
-                  { color: selectedTab === 'upcoming' ? colors.primary : colors.muted }
-                ]}>
-                Upcoming
-              </Text>
-            </Pressable>
-          </View>
-          
-          {selectedTab === 'recent' ? (
-            <View style={styles.activityList}>
-              {activitiesData?.recentActivities?.length > 0 ? (
-                activitiesData.recentActivities.map((activity) => (
-                  <ActivityItem 
-                    key={activity.id}
-                    title={activity.title}
-                    time={activity.time}
-                    type={activity.type.toLowerCase() as any}
-                    description={activity.description}
-                  />
-                ))
-              ) : (
-                <Text style={[styles.emptyText, { color: colors.muted }]}>
-                  No recent activities for today
-                </Text>
-              )}
-            </View>
-          ) : (
-            <View style={styles.upcomingList}>
-              {upcomingData?.upcomingItems?.length > 0 ? (
-                upcomingData.upcomingItems.map((item) => (
-                  <UpcomingCard
-                    key={item.id}
-                    title={item.title}
-                    date={item.date}
-                    time={item.time}
-                    type={item.type.toLowerCase() as any}
-                    onPress={handleUpcomingCardPress}
-                  />
-                ))
-              ) : (
-                <Text style={[styles.emptyText, { color: colors.muted }]}>
-                  No upcoming items scheduled
-                </Text>
-              )}
-            </View>
-          )}
-        </View>
-        
+
         <View style={styles.toolboxSection}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            All Tools
-          </Text>
-          
-          <ToolboxCard
-            title="Food Journal"
-            description="Track your meals and eating patterns"
-            icon={<Utensils color="#FFF\" size={24} />}
-            route="/food-log"
-            color={colors.accent}
-          />
-          
-          <ToolboxCard
-            title="Thought Log"
-            description="Record and restructure negative thoughts"
-            icon={<Brain color="#FFF\" size={24} />}
-            route="/thoughts"
-            color={colors.primary}
-          />
-          
-          <ToolboxCard
-            title="Meal Planning"
-            description="Plan balanced meals for the week"
-            icon={<Calendar color="#FFF\" size={24} />}
-            route="/meal-plan"
-            color={colors.secondary}
-          />
-          
-          <ToolboxCard
-            title="Goals & Exposures"
-            description="Set and track recovery goals"
-            icon={<Target color="#FFF\" size={24} />}
-            route="/goals"
-            color={colors.success}
-          />
-          
-          <ToolboxCard
-            title="Check-in Activities"
-            description="Track behaviors and coping strategies"
-            icon={<Clipboard color="#FFF\" size={24} />}
-            route="/goals"
-            color={colors.warning}
-          />
-          
-          <ToolboxCard
-            title="Self-Care Activities"
-            description="Practice compassion and mindfulness"
-            icon={<Smile color="#FFF\" size={24} />}
-            route="/goals"
-            color="#9C27B0"
-          />
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>All Tools</Text>
+          {[
+            {
+              title: "Food Journal",
+              description: "Track your meals and eating patterns",
+              icon: <Utensils color="#FFF" size={24} />,
+              route: "/food-log",
+              color: colors.accent
+            },
+            {
+              title: "Thought Log",
+              description: "Record and restructure negative thoughts",
+              icon: <Brain color="#FFF" size={24} />,
+              route: "/thoughts",
+              color: colors.primary
+            },
+            {
+              title: "Meal Planning",
+              description: "Plan balanced meals for the week",
+              icon: <Calendar color="#FFF" size={24} />,
+              route: "/meal-plan",
+              color: colors.secondary
+            },
+            {
+              title: "Goals & Exposures",
+              description: "Set and track recovery goals",
+              icon: <Target color="#FFF" size={24} />,
+              route: "/goals",
+              color: colors.success
+            },
+            {
+              title: "Check-in Activities",
+              description: "Track behaviors and coping strategies",
+              icon: <Clipboard color="#FFF" size={24} />,
+              route: "/goals",
+              color: colors.warning
+            },
+            {
+              title: "Self-Care Activities",
+              description: "Practice compassion and mindfulness",
+              icon: <Smile color="#FFF" size={24} />,
+              route: "/goals",
+              color: "#9C27B0"
+            }
+          ].map((tool, index) => (
+            <Pressable
+              key={index}
+              style={[styles.toolCard, { backgroundColor: colors.cardBackground }]}
+              onPress={() => router.push(tool.route)}
+            >
+              <View style={[styles.toolIcon, { backgroundColor: tool.color }]}>
+                {tool.icon}
+              </View>
+              <View style={styles.toolContent}>
+                <Text style={[styles.toolTitle, { color: colors.text }]}>{tool.title}</Text>
+                <Text style={[styles.toolDescription, { color: colors.muted }]}>
+                  {tool.description}
+                </Text>
+              </View>
+            </Pressable>
+          ))}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -274,33 +175,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    marginTop: 12,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  errorText: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    textAlign: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    textAlign: 'center',
-    padding: 20,
   },
   scrollContent: {
     paddingHorizontal: 16,
@@ -313,49 +187,44 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: 24,
     fontWeight: '700',
-    fontFamily: 'Inter-Bold',
   },
   date: {
     fontSize: 16,
     fontWeight: '500',
-    fontFamily: 'Inter-Regular',
+  },
+  statsContainer: {
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+  },
+  statsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 16,
-    fontFamily: 'Inter-SemiBold',
   },
   toolboxSection: {
     marginBottom: 24,
-  },
-  activitySection: {
-    marginBottom: 24,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-  },
-  tab: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  activeTab: {
-    borderBottomWidth: 2,
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-  },
-  activityList: {
-    marginBottom: 8,
-  },
-  upcomingList: {
-    marginBottom: 8,
   },
   toolsGrid: {
     flexDirection: 'row',
@@ -375,6 +244,37 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontWeight: '600',
     fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
+  },
+  toolCard: {
+    flexDirection: 'row',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  toolIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  toolContent: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  toolTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  toolDescription: {
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
