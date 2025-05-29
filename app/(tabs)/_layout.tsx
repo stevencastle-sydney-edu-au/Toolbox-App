@@ -11,12 +11,14 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         tabBarStyle: {
-          height: 60,
-          paddingBottom: 10,
+          height: 64,
+          paddingTop: 8,
+          paddingBottom: 8,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '500',
+          paddingBottom: 4,
         },
         headerShown: true,
         headerStyle: {
@@ -27,13 +29,13 @@ export default function TabLayout() {
           fontSize: 18,
         },
         headerTitle: () => (
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <Image
-                source={require('@/assets/images/ioilogo.png')}
-                style={{ width: 200, height: 200 }}
-                resizeMode="contain"
-              />
-            </View>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <Image
+              source={require('@/assets/images/ioilogo.png')}
+              style={{ width: 200, height: 200 }}
+              resizeMode="contain"
+            />
+          </View>
         ),
         headerTitleAlign: 'center',
       }}>
