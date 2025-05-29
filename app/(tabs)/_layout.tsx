@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, Image, View } from 'react-native';
 import { House, Utensils, Calendar, Brain, Target } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
 
@@ -32,6 +32,16 @@ export default function TabLayout() {
           fontWeight: '600',
           fontSize: 18,
         },
+        headerTitle: () => (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <Image
+              source={require('@/assets/images/ioilogo.png')}
+              style={{ width: 200, height: 100 }}
+              resizeMode="contain"
+            />
+          </View>
+        ),
+        headerTitleAlign: 'center',
       }}>
       <Tabs.Screen
         name="index"
