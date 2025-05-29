@@ -1,5 +1,8 @@
 import { recentActivities, upcomingItems, progressStats, mealPlans, thoughtLogs, goals } from '@/utils/sampleData';
 
+// In-memory storage for food entries
+let foodEntries = [...recentActivities.filter(activity => activity.type === 'food')];
+
 export const resolvers = {
   Query: {
     me: () => ({
@@ -9,8 +12,8 @@ export const resolvers = {
       stats: progressStats,
     }),
     foodEntries: (_, { date }) => {
-      return recentActivities
-        .filter(activity => activity.type === 'food' && activity.date === date)
+      return foodEntries
+        .filter(entry => entry.date === date)
         .map(entry => ({
           id: entry.id,
           title: entry.title,
@@ -24,7 +27,8 @@ export const resolvers = {
     goals: () => goals,
     mealPlans: () => mealPlans,
     recentActivities: (_, { date }) => {
-      return recentActivities.filter(activity => activity.date === date);
+      return [...foodEntries, ...recentActivities.filter(activity => activity.type !== 'food')]
+        .filter(activity => activity.date === date);
     },
     upcomingItems: () => upcomingItems,
   },
@@ -40,9 +44,14 @@ export const resolvers = {
     addFoodEntry: (_, { input }) => {
       const newEntry = {
         id: String(Date.now()),
+        type: 'food',
         ...input,
         date: new Date().toISOString().split('T')[0],
       };
+      
+      // Add to in-memory storage
+      foodEntries.push(newEntry);
+      
       return newEntry;
     },
     addThoughtLog: (_, { input }) => {
