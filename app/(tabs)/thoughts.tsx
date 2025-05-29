@@ -12,11 +12,13 @@ import {
 import { CirclePlus as PlusCircle, Search, Filter, ChevronRight, ChartBar as BarChart2 } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
 import { thoughtLogs } from '@/utils/sampleData';
+import AddThoughtModal from '@/components/AddThoughtModal';
 
 export default function ThoughtsScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [searchQuery, setSearchQuery] = useState('');
+  const [isAddThoughtModalVisible, setIsAddThoughtModalVisible] = useState(false);
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -25,6 +27,19 @@ export default function ThoughtsScreen() {
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const handleAddThought = (thoughtData: {
+    situation: string;
+    automaticThought: string;
+    emotions: string[];
+    emotionIntensity: number;
+    distortionTypes: string[];
+    rationalResponse: string;
+  }) => {
+    // Here you would typically save the thought data to your backend
+    console.log('New thought data:', thoughtData);
+    setIsAddThoughtModalVisible(false);
   };
 
   return (
@@ -290,11 +305,18 @@ export default function ThoughtsScreen() {
       
       <View style={[styles.addButtonContainer, { backgroundColor: colors.background }]}>
         <Pressable 
-          style={[styles.addButton, { backgroundColor: colors.primary }]}>
+          style={[styles.addButton, { backgroundColor: colors.primary }]}
+          onPress={() => setIsAddThoughtModalVisible(true)}>
           <PlusCircle size={20} color="#FFF" />
           <Text style={styles.addButtonText}>New Thought Entry</Text>
         </Pressable>
       </View>
+
+      <AddThoughtModal
+        visible={isAddThoughtModalVisible}
+        onClose={() => setIsAddThoughtModalVisible(false)}
+        onSave={handleAddThought}
+      />
     </SafeAreaView>
   );
 }
