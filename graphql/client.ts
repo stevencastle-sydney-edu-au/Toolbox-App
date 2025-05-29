@@ -15,7 +15,16 @@ export const client = new ApolloClient({
     typePolicies: {
       Query: {
         fields: {
-          // Remove the explicit read() function that was forcing me to be undefined
+          me: {
+            read(existing) {
+              // If the me object exists but doesn't have stats, return undefined
+              // to trigger a network request for the complete object
+              if (existing && !existing.stats) {
+                return undefined;
+              }
+              return existing;
+            }
+          }
         },
       },
     },
