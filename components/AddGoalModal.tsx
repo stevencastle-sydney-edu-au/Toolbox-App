@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -12,19 +12,29 @@ import {
 import { X, Plus, Trash2 } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
 
+type GoalData = {
+  title: string;
+  description: string;
+  category: string;
+  targetDate: string;
+  steps: { description: string }[];
+};
+
 type AddGoalModalProps = {
   visible: boolean;
   onClose: () => void;
-  onSave: (goalData: {
-    title: string;
-    description: string;
-    category: string;
-    targetDate: string;
-    steps: { description: string }[];
-  }) => void;
+  onSave: (goalData: GoalData) => void;
+  initialData?: any;
+  mode?: 'add' | 'edit';
 };
 
-export default function AddGoalModal({ visible, onClose, onSave }: AddGoalModalProps) {
+export default function AddGoalModal({ 
+  visible, 
+  onClose, 
+  onSave,
+  initialData,
+  mode = 'add'
+}: AddGoalModalProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   
@@ -41,6 +51,24 @@ export default function AddGoalModal({ visible, onClose, onSave }: AddGoalModalP
     'Mindfulness',
     'Self-Care',
   ];
+
+  // Update form when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title);
+      setDescription(initialData.description);
+      setCategory(initialData.category);
+      setTargetDate(initialData.targetDate);
+      setSteps(initialData.steps.map((step: any) => ({ description: step.description })));
+    } else {
+      // Reset form when no initial data
+      setTitle('');
+      setDescription('');
+      setCategory('');
+      setTargetDate('');
+      setSteps([{ description: '' }]);
+    }
+  }, [initialData]);
   
   const addStep = () => {
     setSteps([...steps, { description: '' }]);
@@ -66,15 +94,6 @@ export default function AddGoalModal({ visible, onClose, onSave }: AddGoalModalP
       targetDate,
       steps,
     });
-    resetForm();
-  };
-  
-  const resetForm = () => {
-    setTitle('');
-    setDescription('');
-    setCategory('');
-    setTargetDate('');
-    setSteps([{ description: '' }]);
   };
 
   return (
@@ -86,7 +105,9 @@ export default function AddGoalModal({ visible, onClose, onSave }: AddGoalModalP
       <View style={[styles.modalContainer, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
         <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
           <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>New Goal</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              {mode === 'add' ? 'New Goal' : 'Edit Goal'}
+            </Text>
             <Pressable onPress={onClose} style={styles.closeButton}>
               <X size={24} color={colors.text} />
             </Pressable>
@@ -246,7 +267,9 @@ export default function AddGoalModal({ visible, onClose, onSave }: AddGoalModalP
             <Pressable
               style={[styles.saveButton, { backgroundColor: colors.primary }]}
               onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Create Goal</Text>
+              <Text style={styles.saveButtonText}>
+                {mode === 'add' ? 'Create Goal' : 'Update Goal'}
+              </Text>
             </Pressable>
           </View>
         </View>
