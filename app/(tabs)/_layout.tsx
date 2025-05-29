@@ -1,5 +1,5 @@
-import { Tabs, Redirect } from 'expo-router';
-import { useColorScheme, Image, View } from 'react-native';
+import { Tabs, useRouter } from 'expo-router';
+import { useColorScheme, Image, View, ActivityIndicator } from 'react-native';
 import { House, Utensils, Calendar, Brain, Target } from 'lucide-react-native';
 import { useQuery } from '@apollo/client';
 import { GET_USER } from '@/graphql/operations/user';
@@ -7,13 +7,25 @@ import Colors from '@/constants/Colors';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { data, loading } = useQuery(GET_USER, {
+  const router = useRouter();
+  const { data, loading, error } = useQuery(GET_USER, {
     fetchPolicy: 'network-only', // Don't use cache for auth checks
   });
 
-  // Only redirect if we've confirmed there's no user
-  if (!loading && !data?.me) {
-    return <Redirect href="/(auth)/login" />;
+  // Handle authentication check and redirection in useEffect
+  React.useEffect(() => {
+    if (!loading && (!data?.me || error)) {
+      router.replace('/(auth)/login');
+    }
+  }, [loading, data?.me, error, router]);
+
+  // Show loading indicator while checking auth status
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].tint} />
+      </View>
+    );
   }
 
   return (
