@@ -15,12 +15,7 @@ export const client = new ApolloClient({
     typePolicies: {
       Query: {
         fields: {
-          me: {
-            // Don't cache the me query
-            read() {
-              return undefined;
-            },
-          },
+          // Remove the explicit read() function that was forcing me to be undefined
         },
       },
     },
