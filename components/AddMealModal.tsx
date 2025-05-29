@@ -23,7 +23,7 @@ type AddMealModalProps = {
   visible: boolean;
   onClose: () => void;
   onSave: (mealData: MealData) => void;
-  initialData?: MealData;
+  initialData?: MealData | null;
   mode?: 'add' | 'edit';
 };
 
@@ -51,6 +51,12 @@ export default function AddMealModal({
       setDescription(initialData.description);
       setTime(initialData.time);
       setSelectedTags(initialData.tags);
+    } else {
+      // Reset form when no initial data
+      setTitle('');
+      setDescription('');
+      setTime('');
+      setSelectedTags([]);
     }
   }, [initialData]);
   
@@ -69,14 +75,6 @@ export default function AddMealModal({
       time,
       tags: selectedTags,
     });
-    resetForm();
-  };
-  
-  const resetForm = () => {
-    setTitle('');
-    setDescription('');
-    setTime('');
-    setSelectedTags([]);
   };
 
   return (

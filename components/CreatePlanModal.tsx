@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -19,16 +19,26 @@ type MealItem = {
   description: string;
 };
 
+type PlanData = {
+  date: string;
+  meals: MealItem[];
+};
+
 type CreatePlanModalProps = {
   visible: boolean;
   onClose: () => void;
-  onSave: (planData: {
-    date: string;
-    meals: MealItem[];
-  }) => void;
+  onSave: (planData: PlanData) => void;
+  initialData?: PlanData | null;
+  mode?: 'add' | 'edit';
 };
 
-export default function CreatePlanModal({ visible, onClose, onSave }: CreatePlanModalProps) {
+export default function CreatePlanModal({ 
+  visible, 
+  onClose, 
+  onSave,
+  initialData,
+  mode = 'add'
+}: CreatePlanModalProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   
@@ -36,6 +46,18 @@ export default function CreatePlanModal({ visible, onClose, onSave }: CreatePlan
   const [meals, setMeals] = useState<MealItem[]>([
     { id: '1', time: '', title: '', description: '' },
   ]);
+
+  // Update form when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setSelectedDate(initialData.date);
+      setMeals(initialData.meals);
+    } else {
+      // Reset form when no initial data
+      setSelectedDate('');
+      setMeals([{ id: '1', time: '', title: '', description: '' }]);
+    }
+  }, [initialData]);
   
   const addMeal = () => {
     setMeals([
@@ -66,12 +88,6 @@ export default function CreatePlanModal({ visible, onClose, onSave }: CreatePlan
       date: selectedDate,
       meals: meals,
     });
-    resetForm();
-  };
-  
-  const resetForm = () => {
-    setSelectedDate('');
-    setMeals([{ id: '1', time: '', title: '', description: '' }]);
   };
 
   return (
@@ -83,7 +99,9 @@ export default function CreatePlanModal({ visible, onClose, onSave }: CreatePlan
       <View style={[styles.modalContainer, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
         <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
           <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Create New Plan</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              {mode === 'add' ? 'Create New Plan' : 'Edit Plan'}
+            </Text>
             <Pressable onPress={onClose} style={styles.closeButton}>
               <X size={24} color={colors.text} />
             </Pressable>
@@ -212,7 +230,9 @@ export default function CreatePlanModal({ visible, onClose, onSave }: CreatePlan
             <Pressable
               style={[styles.saveButton, { backgroundColor: colors.primary }]}
               onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Create Plan</Text>
+              <Text style={styles.saveButtonText}>
+                {mode === 'add' ? 'Create Plan' : 'Update Plan'}
+              </Text>
             </Pressable>
           </View>
         </View>
