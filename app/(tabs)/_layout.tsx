@@ -1,3 +1,4 @@
+import React from 'react';
 import { Tabs, useRouter } from 'expo-router';
 import { useColorScheme, Image, View, ActivityIndicator } from 'react-native';
 import { House, Utensils, Calendar, Brain, Target } from 'lucide-react-native';
