@@ -8,14 +8,16 @@ import {
   useColorScheme,
   SafeAreaView,
 } from 'react-native';
-import { CirclePlus as PlusCircle, CircleCheck as CheckCircle2, Circle, ChevronRight, ArrowUpRight, Target, Calendar } from 'lucide-react-native';
+import { CirclePlus as PlusCircle, CircleCheck as CheckCircle2, Circle, ChevronRight, ArrowUpRight, Target } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
 import { goals } from '@/utils/sampleData';
+import AddGoalModal from '@/components/AddGoalModal';
 
 export default function GoalsScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [activeTab, setActiveTab] = useState<'goals' | 'exposures' | 'check-ins'>('goals');
+  const [isAddGoalModalVisible, setIsAddGoalModalVisible] = useState(false);
   
   const getTabColor = (tab: 'goals' | 'exposures' | 'check-ins') => {
     switch (tab) {
@@ -26,6 +28,18 @@ export default function GoalsScreen() {
       case 'check-ins':
         return colors.warning;
     }
+  };
+
+  const handleAddGoal = (goalData: {
+    title: string;
+    description: string;
+    category: string;
+    targetDate: string;
+    steps: { description: string }[];
+  }) => {
+    // Here you would typically save the goal data to your backend
+    console.log('New goal data:', goalData);
+    setIsAddGoalModalVisible(false);
   };
 
   return (
@@ -124,7 +138,6 @@ export default function GoalsScreen() {
                       </Text>
                     </View>
                     <View style={styles.dateContainer}>
-                      <Calendar size={14} color={colors.muted} />
                       <Text style={[styles.dateText, { color: colors.muted }]}>
                         {goal.targetDate}
                       </Text>
@@ -208,7 +221,6 @@ export default function GoalsScreen() {
                       </Text>
                     </View>
                     <View style={styles.dateContainer}>
-                      <Calendar size={14} color={colors.muted} />
                       <Text style={[styles.dateText, { color: colors.muted }]}>
                         {goal.targetDate}
                       </Text>
@@ -395,7 +407,8 @@ export default function GoalsScreen() {
           style={[
             styles.addButton, 
             { backgroundColor: getTabColor(activeTab) }
-          ]}>
+          ]}
+          onPress={() => setIsAddGoalModalVisible(true)}>
           <PlusCircle size={20} color="#FFF" />
           <Text style={styles.addButtonText}>
             {activeTab === 'goals' ? 'Add New Goal' : 
@@ -403,6 +416,12 @@ export default function GoalsScreen() {
           </Text>
         </Pressable>
       </View>
+
+      <AddGoalModal
+        visible={isAddGoalModalVisible}
+        onClose={() => setIsAddGoalModalVisible(false)}
+        onSave={handleAddGoal}
+      />
     </SafeAreaView>
   );
 }
@@ -489,7 +508,6 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 12,
-    marginLeft: 4,
   },
   goalTitle: {
     fontSize: 18,
