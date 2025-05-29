@@ -7,7 +7,6 @@ import {
   useColorScheme,
   Pressable,
   SafeAreaView,
-  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { 
@@ -34,15 +33,12 @@ export default function HomeScreen() {
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState<'recent' | 'upcoming'>('recent');
   
-  // Get current date in YYYY-MM-DD format
-  const today = new Date().toISOString().split('T')[0];
-  
   // Get user data and stats
   const { data: userData, loading: userLoading } = useQuery(GET_USER);
   
   // Get recent activities for today
-  const { data: activitiesData, loading: activitiesLoading, error: activitiesError } = useQuery(GET_RECENT_ACTIVITIES, {
-    variables: { date: today },
+  const { data: activitiesData, loading: activitiesLoading } = useQuery(GET_RECENT_ACTIVITIES, {
+    variables: { date: '2025-05-02' }, // TODO: Use actual current date
   });
   
   // Get upcoming items
@@ -66,18 +62,7 @@ export default function HomeScreen() {
   if (userLoading || activitiesLoading || upcomingLoading) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={[styles.loadingText, { color: colors.text }]}>Loading...</Text>
-      </View>
-    );
-  }
-
-  if (activitiesError) {
-    return (
-      <View style={[styles.errorContainer, { backgroundColor: colors.background }]}>
-        <Text style={[styles.errorText, { color: colors.error }]}>
-          Error loading activities. Please try again.
-        </Text>
       </View>
     );
   }
@@ -93,12 +78,7 @@ export default function HomeScreen() {
             Hello, {userData?.me?.name || 'User'}
           </Text>
           <Text style={[styles.date, { color: colors.muted }]}>
-            {new Date().toLocaleDateString('en-US', { 
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric',
-              year: 'numeric'
-            })}
+            Friday, May 2, 2025
           </Text>
         </View>
         
@@ -175,40 +155,28 @@ export default function HomeScreen() {
           
           {selectedTab === 'recent' ? (
             <View style={styles.activityList}>
-              {activitiesData?.recentActivities?.length > 0 ? (
-                activitiesData.recentActivities.map((activity) => (
-                  <ActivityItem 
-                    key={activity.id}
-                    title={activity.title}
-                    time={activity.time}
-                    type={activity.type.toLowerCase() as any}
-                    description={activity.description}
-                  />
-                ))
-              ) : (
-                <Text style={[styles.emptyText, { color: colors.muted }]}>
-                  No recent activities for today
-                </Text>
-              )}
+              {activitiesData?.recentActivities.map((activity) => (
+                <ActivityItem 
+                  key={activity.id}
+                  title={activity.title}
+                  time={activity.time}
+                  type={activity.type.toLowerCase() as any}
+                  description={activity.description}
+                />
+              ))}
             </View>
           ) : (
             <View style={styles.upcomingList}>
-              {upcomingData?.upcomingItems?.length > 0 ? (
-                upcomingData.upcomingItems.map((item) => (
-                  <UpcomingCard
-                    key={item.id}
-                    title={item.title}
-                    date={item.date}
-                    time={item.time}
-                    type={item.type.toLowerCase() as any}
-                    onPress={handleUpcomingCardPress}
-                  />
-                ))
-              ) : (
-                <Text style={[styles.emptyText, { color: colors.muted }]}>
-                  No upcoming items scheduled
-                </Text>
-              )}
+              {upcomingData?.upcomingItems.map((item) => (
+                <UpcomingCard
+                  key={item.id}
+                  title={item.title}
+                  date={item.date}
+                  time={item.time}
+                  type={item.type.toLowerCase() as any}
+                  onPress={handleUpcomingCardPress}
+                />
+              ))}
             </View>
           )}
         </View>
@@ -221,7 +189,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Food Journal"
             description="Track your meals and eating patterns"
-            icon={<Utensils color="#FFF\" size={24} />}
+            icon={<Utensils color="#FFF" size={24} />}
             route="/food-log"
             color={colors.accent}
           />
@@ -229,7 +197,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Thought Log"
             description="Record and restructure negative thoughts"
-            icon={<Brain color="#FFF\" size={24} />}
+            icon={<Brain color="#FFF" size={24} />}
             route="/thoughts"
             color={colors.primary}
           />
@@ -237,7 +205,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Meal Planning"
             description="Plan balanced meals for the week"
-            icon={<Calendar color="#FFF\" size={24} />}
+            icon={<Calendar color="#FFF" size={24} />}
             route="/meal-plan"
             color={colors.secondary}
           />
@@ -245,7 +213,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Goals & Exposures"
             description="Set and track recovery goals"
-            icon={<Target color="#FFF\" size={24} />}
+            icon={<Target color="#FFF" size={24} />}
             route="/goals"
             color={colors.success}
           />
@@ -253,7 +221,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Check-in Activities"
             description="Track behaviors and coping strategies"
-            icon={<Clipboard color="#FFF\" size={24} />}
+            icon={<Clipboard color="#FFF" size={24} />}
             route="/goals"
             color={colors.warning}
           />
@@ -261,7 +229,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Self-Care Activities"
             description="Practice compassion and mindfulness"
-            icon={<Smile color="#FFF\" size={24} />}
+            icon={<Smile color="#FFF" size={24} />}
             route="/goals"
             color="#9C27B0"
           />
@@ -283,24 +251,6 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    marginTop: 12,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  errorText: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    textAlign: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    textAlign: 'center',
-    padding: 20,
   },
   scrollContent: {
     paddingHorizontal: 16,
