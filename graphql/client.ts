@@ -11,5 +11,23 @@ const schema = makeExecutableSchema({
 
 export const client = new ApolloClient({
   link: new SchemaLink({ schema }),
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          me: {
+            // Don't cache the me query
+            read() {
+              return undefined;
+            },
+          },
+        },
+      },
+    },
+  }),
+  defaultOptions: {
+    watchQuery: {
+      fetchPolicy: 'cache-and-network',
+    },
+  },
 });
