@@ -13,6 +13,7 @@ import {
 import { CirclePlus as PlusCircle, ChevronDown, Camera, Clock, MoveVertical as MoreVertical } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
 import { recentActivities } from '@/utils/sampleData';
+import AddMealModal from '@/components/AddMealModal';
 
 // Filter only food entries from the sample data
 const foodEntries = recentActivities.filter(
@@ -23,6 +24,7 @@ export default function FoodLogScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [activeDate, setActiveDate] = useState('2025-05-02');
+  const [isAddMealModalVisible, setIsAddMealModalVisible] = useState(false);
   
   // Group entries by date
   const entriesByDate = foodEntries.reduce((acc, entry) => {
@@ -41,6 +43,17 @@ export default function FoodLogScreen() {
       month: 'long', 
       day: 'numeric' 
     });
+  };
+
+  const handleAddMeal = (mealData: {
+    title: string;
+    description: string;
+    time: string;
+    tags: string[];
+  }) => {
+    // Here you would typically save the meal data to your backend
+    console.log('New meal data:', mealData);
+    setIsAddMealModalVisible(false);
   };
 
   return (
@@ -103,7 +116,8 @@ export default function FoodLogScreen() {
           </View>
           
           <Pressable 
-            style={[styles.addFoodButton, { borderColor: colors.border }]}>
+            style={[styles.addFoodButton, { borderColor: colors.border }]}
+            onPress={() => setIsAddMealModalVisible(true)}>
             <PlusCircle size={16} color={colors.primary} />
             <Text style={[styles.addFoodText, { color: colors.primary }]}>
               Add Food
@@ -143,7 +157,8 @@ export default function FoodLogScreen() {
           </View>
           
           <Pressable 
-            style={[styles.addFoodButton, { borderColor: colors.border }]}>
+            style={[styles.addFoodButton, { borderColor: colors.border }]}
+            onPress={() => setIsAddMealModalVisible(true)}>
             <PlusCircle size={16} color={colors.primary} />
             <Text style={[styles.addFoodText, { color: colors.primary }]}>
               Add Food
@@ -177,7 +192,8 @@ export default function FoodLogScreen() {
           </View>
           
           <Pressable 
-            style={[styles.addFoodButton, { borderColor: colors.border }]}>
+            style={[styles.addFoodButton, { borderColor: colors.border }]}
+            onPress={() => setIsAddMealModalVisible(true)}>
             <PlusCircle size={16} color={colors.primary} />
             <Text style={[styles.addFoodText, { color: colors.primary }]}>
               Add Food
@@ -197,7 +213,8 @@ export default function FoodLogScreen() {
           </View>
           
           <Pressable 
-            style={[styles.addFoodButton, { borderColor: colors.border }]}>
+            style={[styles.addFoodButton, { borderColor: colors.border }]}
+            onPress={() => setIsAddMealModalVisible(true)}>
             <PlusCircle size={16} color={colors.primary} />
             <Text style={[styles.addFoodText, { color: colors.primary }]}>
               Add Food
@@ -262,7 +279,8 @@ export default function FoodLogScreen() {
       
       <View style={[styles.addButtonContainer, { backgroundColor: colors.background }]}>
         <Pressable 
-          style={[styles.addButton, { backgroundColor: colors.primary }]}>
+          style={[styles.addButton, { backgroundColor: colors.primary }]}
+          onPress={() => setIsAddMealModalVisible(true)}>
           <PlusCircle size={20} color="#FFF" />
           <Text style={styles.addButtonText}>Add Meal</Text>
         </Pressable>
@@ -272,6 +290,12 @@ export default function FoodLogScreen() {
           <Camera size={20} color="#FFF" />
         </Pressable>
       </View>
+
+      <AddMealModal
+        visible={isAddMealModalVisible}
+        onClose={() => setIsAddMealModalVisible(false)}
+        onSave={handleAddMeal}
+      />
     </SafeAreaView>
   );
 }
