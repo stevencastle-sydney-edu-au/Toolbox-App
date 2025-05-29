@@ -48,7 +48,8 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
-      <Redirect href="/(auth)/login" />
+      {/* Remove the automatic redirect to login */}
+      <Slot />
       <StatusBar style="auto" />
     </ApolloProvider>
   );

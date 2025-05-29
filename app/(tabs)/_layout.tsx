@@ -1,10 +1,18 @@
-import { Tabs } from 'expo-router';
+import { Tabs, Redirect } from 'expo-router';
 import { useColorScheme, Image, View } from 'react-native';
 import { House, Utensils, Calendar, Brain, Target } from 'lucide-react-native';
+import { useQuery } from '@apollo/client';
+import { GET_USER } from '@/graphql/operations/user';
 import Colors from '@/constants/Colors';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { data, loading } = useQuery(GET_USER);
+
+  // If no user data and not loading, redirect to login
+  if (!loading && !data?.me) {
+    return <Redirect href="/(auth)/login" />;
+  }
 
   return (
     <Tabs
