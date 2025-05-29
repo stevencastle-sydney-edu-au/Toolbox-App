@@ -63,6 +63,10 @@ export default function LoginScreen() {
               {isLoading ? 'Sending Code...' : 'Send Login Code'}
             </Text>
           </Pressable>
+
+          <Pressable style={styles.createAccountButton}>
+            <Text style={styles.createAccountText}>Create New Account</Text>
+          </Pressable>
         </View>
 
         <View style={styles.footer}>
@@ -144,6 +148,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
+  },
+  createAccountButton: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  createAccountText: {
+    color: Colors.light.primary,
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    textDecorationLine: 'underline',
   },
   footer: {
     marginTop: 32,
