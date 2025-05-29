@@ -117,7 +117,7 @@ export default function HomeScreen() {
             {
               title: "Thought Log",
               description: "Record and restructure negative thoughts",
-              icon: <Brain color="#FFF" size={24} />,
+              icon: <Brain color="#FFF\" size={24} />,
               route: "/thoughts",
               color: colors.primary
             },
@@ -131,7 +131,7 @@ export default function HomeScreen() {
             {
               title: "Goals & Exposures",
               description: "Set and track recovery goals",
-              icon: <Target color="#FFF" size={24} />,
+              icon: <Target color="#FFF\" size={24} />,
               route: "/goals",
               color: colors.success
             },
@@ -145,7 +145,7 @@ export default function HomeScreen() {
             {
               title: "Self-Care Activities",
               description: "Practice compassion and mindfulness",
-              icon: <Smile color="#FFF" size={24} />,
+              icon: <Smile color="#FFF\" size={24} />,
               route: "/goals",
               color: "#9C27B0"
             }
