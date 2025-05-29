@@ -221,7 +221,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Food Journal"
             description="Track your meals and eating patterns"
-            icon={<Utensils color="#FFF" size={24} />}
+            icon={<Utensils color="#FFF\" size={24} />}
             route="/food-log"
             color={colors.accent}
           />
@@ -229,7 +229,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Thought Log"
             description="Record and restructure negative thoughts"
-            icon={<Brain color="#FFF" size={24} />}
+            icon={<Brain color="#FFF\" size={24} />}
             route="/thoughts"
             color={colors.primary}
           />
@@ -237,7 +237,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Meal Planning"
             description="Plan balanced meals for the week"
-            icon={<Calendar color="#FFF" size={24} />}
+            icon={<Calendar color="#FFF\" size={24} />}
             route="/meal-plan"
             color={colors.secondary}
           />
@@ -245,7 +245,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Goals & Exposures"
             description="Set and track recovery goals"
-            icon={<Target color="#FFF" size={24} />}
+            icon={<Target color="#FFF\" size={24} />}
             route="/goals"
             color={colors.success}
           />
@@ -253,7 +253,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Check-in Activities"
             description="Track behaviors and coping strategies"
-            icon={<Clipboard color="#FFF" size={24} />}
+            icon={<Clipboard color="#FFF\" size={24} />}
             route="/goals"
             color={colors.warning}
           />
@@ -261,7 +261,7 @@ export default function HomeScreen() {
           <ToolboxCard
             title="Self-Care Activities"
             description="Practice compassion and mindfulness"
-            icon={<Smile color="#FFF" size={24} />}
+            icon={<Smile color="#FFF\" size={24} />}
             route="/goals"
             color="#9C27B0"
           />
