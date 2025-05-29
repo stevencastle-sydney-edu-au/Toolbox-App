@@ -7,6 +7,7 @@ import {
   Pressable,
   useColorScheme,
   SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
 import { CirclePlus as PlusCircle, CircleCheck as CheckCircle2, Circle, ChevronRight, ArrowUpRight, Target } from 'lucide-react-native';
 import { useQuery, useMutation } from '@apollo/client';
@@ -25,8 +26,12 @@ export default function GoalsScreen() {
   const [isAddExposureModalVisible, setIsAddExposureModalVisible] = useState(false);
   const [isAddCheckInModalVisible, setIsAddCheckInModalVisible] = useState(false);
 
-  // Fetch goals
-  const { data, loading, error } = useQuery(GET_GOALS);
+  // Fetch goals with proper error handling
+  const { data, loading, error, refetch } = useQuery(GET_GOALS, {
+    onError: (error) => {
+      console.error('Error fetching goals:', error);
+    }
+  });
 
   // Add goal mutation
   const [addGoal] = useMutation(ADD_GOAL, {
@@ -37,7 +42,7 @@ export default function GoalsScreen() {
   const [updateGoalStep] = useMutation(UPDATE_GOAL_STEP, {
     refetchQueries: [{ query: GET_GOALS }],
   });
-  
+
   const getTabColor = (tab: 'goals' | 'exposures' | 'check-ins') => {
     switch (tab) {
       case 'goals':
@@ -119,6 +124,7 @@ export default function GoalsScreen() {
   if (loading) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={[styles.loadingText, { color: colors.text }]}>Loading goals...</Text>
       </View>
     );
@@ -132,15 +138,15 @@ export default function GoalsScreen() {
         </Text>
         <Pressable
           style={[styles.retryButton, { backgroundColor: colors.primary }]}
-          onPress={() => window.location.reload()}>
+          onPress={() => refetch()}>
           <Text style={styles.retryButtonText}>Retry</Text>
         </Pressable>
       </View>
     );
   }
 
-  const inProgressGoals = data?.goals.filter(g => g.status === 'IN_PROGRESS') || [];
-  const notStartedGoals = data?.goals.filter(g => g.status === 'NOT_STARTED') || [];
+  const inProgressGoals = data?.goals?.filter(g => g.status === 'IN_PROGRESS') || [];
+  const notStartedGoals = data?.goals?.filter(g => g.status === 'NOT_STARTED') || [];
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -553,6 +559,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
+    marginTop: 12,
   },
   errorContainer: {
     flex: 1,
