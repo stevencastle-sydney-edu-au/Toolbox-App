@@ -11,11 +11,13 @@ import {
 import { CirclePlus as PlusCircle, ChevronLeft, ChevronRight, Clock, CreditCard as Edit2 } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
 import { mealPlans } from '@/utils/sampleData';
+import CreatePlanModal from '@/components/CreatePlanModal';
 
 export default function MealPlanScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const [isCreatePlanModalVisible, setIsCreatePlanModalVisible] = useState(false);
   
   const selectedDay = mealPlans[selectedDayIndex];
   
@@ -29,6 +31,12 @@ export default function MealPlanScreen() {
     if (selectedDayIndex < mealPlans.length - 1) {
       setSelectedDayIndex(selectedDayIndex + 1);
     }
+  };
+  
+  const handleCreatePlan = (planData: { date: string; meals: any[] }) => {
+    // Here you would typically save the plan data to your backend
+    console.log('New plan data:', planData);
+    setIsCreatePlanModalVisible(false);
   };
   
   // Generate week days
@@ -170,7 +178,8 @@ export default function MealPlanScreen() {
         ))}
         
         <Pressable 
-          style={[styles.addMealButton, { borderColor: colors.border }]}>
+          style={[styles.addMealButton, { borderColor: colors.border }]}
+          onPress={() => setIsCreatePlanModalVisible(true)}>
           <PlusCircle size={20} color={colors.primary} />
           <Text style={[styles.addMealText, { color: colors.primary }]}>
             Add Meal
@@ -230,11 +239,18 @@ export default function MealPlanScreen() {
       
       <View style={[styles.addButtonContainer, { backgroundColor: colors.background }]}>
         <Pressable 
-          style={[styles.addButton, { backgroundColor: colors.primary }]}>
+          style={[styles.addButton, { backgroundColor: colors.primary }]}
+          onPress={() => setIsCreatePlanModalVisible(true)}>
           <PlusCircle size={20} color="#FFF" />
           <Text style={styles.addButtonText}>Create New Plan</Text>
         </Pressable>
       </View>
+
+      <CreatePlanModal
+        visible={isCreatePlanModalVisible}
+        onClose={() => setIsCreatePlanModalVisible(false)}
+        onSave={handleCreatePlan}
+      />
     </SafeAreaView>
   );
 }
