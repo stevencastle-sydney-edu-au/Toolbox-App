@@ -17,7 +17,7 @@ import AddMealModal from '@/components/AddMealModal';
 
 // Filter only food entries from the sample data
 const foodEntries = recentActivities.filter(
-  activity => activity.type === 'food'
+  activity => activity.type === 'FOOD'
 );
 
 export default function FoodLogScreen() {
@@ -73,6 +73,15 @@ export default function FoodLogScreen() {
     setIsAddMealModalVisible(true);
   };
 
+  const handleFoodEntryPress = (entry: any) => {
+    handleEditMeal({
+      title: entry.title,
+      description: entry.description,
+      time: entry.time,
+      tags: entry.tags || [],
+    });
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
@@ -96,55 +105,31 @@ export default function FoodLogScreen() {
             <Text style={[styles.mealTypeTime, { color: colors.muted }]}>8:30 AM</Text>
           </View>
           
-          <View style={[styles.foodEntry, { backgroundColor: colors.cardBackground }]}>
-            <View style={styles.foodEntryContent}>
-              <Text style={[styles.foodName, { color: colors.text }]}>
-                Oatmeal with berries
-              </Text>
-              <Text style={[styles.foodDescription, { color: colors.muted }]}>
-                1 cup oatmeal, 1/4 cup mixed berries, 1 tbsp honey
-              </Text>
-              <View style={styles.foodTags}>
-                <View style={[styles.foodTag, { backgroundColor: colors.primary + '20' }]}>
-                  <Text style={[styles.foodTagText, { color: colors.primary }]}>Balanced</Text>
+          {foodEntries
+            .filter(entry => entry.time.includes('AM') && parseInt(entry.time) < 11)
+            .map(entry => (
+              <Pressable
+                key={entry.id}
+                style={[styles.foodEntry, { backgroundColor: colors.cardBackground }]}
+                onPress={() => handleFoodEntryPress(entry)}>
+                <View style={styles.foodEntryContent}>
+                  <Text style={[styles.foodName, { color: colors.text }]}>
+                    {entry.title}
+                  </Text>
+                  <Text style={[styles.foodDescription, { color: colors.muted }]}>
+                    {entry.description}
+                  </Text>
+                  <View style={styles.foodTags}>
+                    <View style={[styles.foodTag, { backgroundColor: colors.primary + '20' }]}>
+                      <Text style={[styles.foodTagText, { color: colors.primary }]}>Balanced</Text>
+                    </View>
+                    <View style={[styles.foodTag, { backgroundColor: colors.success + '20' }]}>
+                      <Text style={[styles.foodTagText, { color: colors.success }]}>Planned</Text>
+                    </View>
+                  </View>
                 </View>
-                <View style={[styles.foodTag, { backgroundColor: colors.success + '20' }]}>
-                  <Text style={[styles.foodTagText, { color: colors.success }]}>Planned</Text>
-                </View>
-              </View>
-            </View>
-            <Pressable 
-              style={styles.moreButton}
-              onPress={() => handleEditMeal({
-                title: 'Oatmeal with berries',
-                description: '1 cup oatmeal, 1/4 cup mixed berries, 1 tbsp honey',
-                time: '8:30 AM',
-                tags: ['Balanced', 'Planned']
-              })}>
-              <MoreVertical size={20} color={colors.muted} />
-            </Pressable>
-          </View>
-          
-          <View style={[styles.foodEntry, { backgroundColor: colors.cardBackground }]}>
-            <View style={styles.foodEntryContent}>
-              <Text style={[styles.foodName, { color: colors.text }]}>
-                Green tea
-              </Text>
-              <Text style={[styles.foodDescription, { color: colors.muted }]}>
-                1 cup, unsweetened
-              </Text>
-            </View>
-            <Pressable 
-              style={styles.moreButton}
-              onPress={() => handleEditMeal({
-                title: 'Green tea',
-                description: '1 cup, unsweetened',
-                time: '8:30 AM',
-                tags: []
-              })}>
-              <MoreVertical size={20} color={colors.muted} />
-            </Pressable>
-          </View>
+              </Pressable>
+            ))}
           
           <Pressable 
             style={[styles.addFoodButton, { borderColor: colors.border }]}
@@ -165,30 +150,39 @@ export default function FoodLogScreen() {
             <Text style={[styles.mealTypeTime, { color: colors.muted }]}>12:30 PM</Text>
           </View>
           
-          <View style={[styles.foodEntry, { backgroundColor: colors.cardBackground }]}>
-            <View style={styles.foodEntryContent}>
-              <Text style={[styles.foodName, { color: colors.text }]}>
-                Chicken salad
-              </Text>
-              <Text style={[styles.foodDescription, { color: colors.muted }]}>
-                Grilled chicken breast, mixed greens, cherry tomatoes, olive oil dressing
-              </Text>
-              <View style={styles.foodTags}>
-                <View style={[styles.foodTag, { backgroundColor: colors.primary + '20' }]}>
-                  <Text style={[styles.foodTagText, { color: colors.primary }]}>Balanced</Text>
+          {foodEntries
+            .filter(entry => entry.time.includes('PM') && parseInt(entry.time) < 4)
+            .map(entry => (
+              <Pressable
+                key={entry.id}
+                style={[styles.foodEntry, { backgroundColor: colors.cardBackground }]}
+                onPress={() => handleFoodEntryPress(entry)}>
+                <View style={styles.foodEntryContent}>
+                  <Text style={[styles.foodName, { color: colors.text }]}>
+                    {entry.title}
+                  </Text>
+                  <Text style={[styles.foodDescription, { color: colors.muted }]}>
+                    {entry.description}
+                  </Text>
+                  <View style={styles.foodTags}>
+                    <View style={[styles.foodTag, { backgroundColor: colors.primary + '20' }]}>
+                      <Text style={[styles.foodTagText, { color: colors.primary }]}>Balanced</Text>
+                    </View>
+                    <View style={[styles.foodTag, { backgroundColor: colors.secondary + '20' }]}>
+                      <Text style={[styles.foodTagText, { color: colors.secondary }]}>Protein</Text>
+                    </View>
+                  </View>
                 </View>
-                <View style={[styles.foodTag, { backgroundColor: colors.secondary + '20' }]}>
-                  <Text style={[styles.foodTagText, { color: colors.secondary }]}>Protein</Text>
-                </View>
-              </View>
-            </View>
-            <View style={styles.foodImageContainer}>
-              <Image 
-                source={{ uri: 'https://images.pexels.com/photos/1143754/pexels-photo-1143754.jpeg?auto=compress&cs=tinysrgb&w=400' }}
-                style={styles.foodImage}
-              />
-            </View>
-          </View>
+                {entry.image && (
+                  <View style={styles.foodImageContainer}>
+                    <Image 
+                      source={{ uri: entry.image }}
+                      style={styles.foodImage}
+                    />
+                  </View>
+                )}
+              </Pressable>
+            ))}
           
           <Pressable 
             style={[styles.addFoodButton, { borderColor: colors.border }]}
@@ -209,31 +203,28 @@ export default function FoodLogScreen() {
             <Text style={[styles.mealTypeTime, { color: colors.muted }]}>3:00 PM</Text>
           </View>
           
-          <View style={[styles.foodEntry, { backgroundColor: colors.cardBackground }]}>
-            <View style={styles.foodEntryContent}>
-              <Text style={[styles.foodName, { color: colors.text }]}>
-                Apple with almond butter
-              </Text>
-              <Text style={[styles.foodDescription, { color: colors.muted }]}>
-                1 medium apple, 1 tbsp almond butter
-              </Text>
-              <View style={styles.foodTags}>
-                <View style={[styles.foodTag, { backgroundColor: colors.success + '20' }]}>
-                  <Text style={[styles.foodTagText, { color: colors.success }]}>Planned</Text>
+          {foodEntries
+            .filter(entry => entry.time.includes('PM') && parseInt(entry.time) >= 4 && parseInt(entry.time) < 6)
+            .map(entry => (
+              <Pressable
+                key={entry.id}
+                style={[styles.foodEntry, { backgroundColor: colors.cardBackground }]}
+                onPress={() => handleFoodEntryPress(entry)}>
+                <View style={styles.foodEntryContent}>
+                  <Text style={[styles.foodName, { color: colors.text }]}>
+                    {entry.title}
+                  </Text>
+                  <Text style={[styles.foodDescription, { color: colors.muted }]}>
+                    {entry.description}
+                  </Text>
+                  <View style={styles.foodTags}>
+                    <View style={[styles.foodTag, { backgroundColor: colors.success + '20' }]}>
+                      <Text style={[styles.foodTagText, { color: colors.success }]}>Planned</Text>
+                    </View>
+                  </View>
                 </View>
-              </View>
-            </View>
-            <Pressable 
-              style={styles.moreButton}
-              onPress={() => handleEditMeal({
-                title: 'Apple with almond butter',
-                description: '1 medium apple, 1 tbsp almond butter',
-                time: '3:00 PM',
-                tags: ['Planned']
-              })}>
-              <MoreVertical size={20} color={colors.muted} />
-            </Pressable>
-          </View>
+              </Pressable>
+            ))}
           
           <Pressable 
             style={[styles.addFoodButton, { borderColor: colors.border }]}
@@ -251,13 +242,31 @@ export default function FoodLogScreen() {
         <View style={styles.mealTypes}>
           <View style={[styles.mealTypeHeader, { borderBottomColor: colors.border }]}>
             <Text style={[styles.mealTypeTitle, { color: colors.text }]}>Dinner</Text>
-            <View style={styles.rowCenter}>
-              <Clock size={16} color={colors.muted} />
-              <Text style={[styles.addMealTimeText, { color: colors.muted }]}>
-                Add time
-              </Text>
-            </View>
+            <Text style={[styles.mealTypeTime, { color: colors.muted }]}>7:00 PM</Text>
           </View>
+          
+          {foodEntries
+            .filter(entry => entry.time.includes('PM') && parseInt(entry.time) >= 6)
+            .map(entry => (
+              <Pressable
+                key={entry.id}
+                style={[styles.foodEntry, { backgroundColor: colors.cardBackground }]}
+                onPress={() => handleFoodEntryPress(entry)}>
+                <View style={styles.foodEntryContent}>
+                  <Text style={[styles.foodName, { color: colors.text }]}>
+                    {entry.title}
+                  </Text>
+                  <Text style={[styles.foodDescription, { color: colors.muted }]}>
+                    {entry.description}
+                  </Text>
+                  <View style={styles.foodTags}>
+                    <View style={[styles.foodTag, { backgroundColor: colors.success + '20' }]}>
+                      <Text style={[styles.foodTagText, { color: colors.success }]}>Planned</Text>
+                    </View>
+                  </View>
+                </View>
+              </Pressable>
+            ))}
           
           <Pressable 
             style={[styles.addFoodButton, { borderColor: colors.border }]}
