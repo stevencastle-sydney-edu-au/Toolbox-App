@@ -1,0 +1,72 @@
+import { Tabs } from 'expo-router';
+import { useColorScheme } from 'react-native';
+import { House, Utensils, Calendar, Brain, Target } from 'lucide-react-native';
+import Colors from '@/constants/Colors';
+
+export default function TabLayout() {
+  const colorScheme = useColorScheme();
+
+  return (
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarStyle: {
+          height: 60,
+          paddingBottom: 10,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
+        },
+        headerShown: true,
+        headerStyle: {
+          height: 100,
+        },
+        headerTitleStyle: {
+          fontWeight: '600',
+          fontSize: 18,
+        },
+      }}>
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'My Toolbox',
+          tabBarLabel: 'Home',
+          tabBarIcon: ({ color }) => <House size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="food-log"
+        options={{
+          title: 'Food Journal',
+          tabBarLabel: 'Food',
+          tabBarIcon: ({ color }) => <Utensils size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="meal-plan"
+        options={{
+          title: 'Meal Planning',
+          tabBarLabel: 'Plan',
+          tabBarIcon: ({ color }) => <Calendar size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="thoughts"
+        options={{
+          title: 'Thought Log',
+          tabBarLabel: 'Thoughts',
+          tabBarIcon: ({ color }) => <Brain size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="goals"
+        options={{
+          title: 'Goals & Exposures',
+          tabBarLabel: 'Goals',
+          tabBarIcon: ({ color }) => <Target size={24} color={color} />,
+        }}
+      />
+    </Tabs>
+  );
+}
