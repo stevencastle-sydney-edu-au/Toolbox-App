@@ -20,6 +20,7 @@ export default function MealPlanScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [isCreatePlanModalVisible, setIsCreatePlanModalVisible] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
 
   // Fetch meal plans
   const { data, loading, error } = useQuery(GET_MEAL_PLANS);
@@ -53,17 +54,28 @@ export default function MealPlanScreen() {
         },
       });
       setIsCreatePlanModalVisible(false);
+      setSelectedPlan(null);
     } catch (error) {
       console.error('Error creating meal plan:', error);
     }
   };
+
+  const handleMealPress = (meal: any) => {
+    setSelectedPlan({
+      date: selectedDay.date,
+      meals: [meal],
+    });
+    setIsCreatePlanModalVisible(true);
+  };
   
   const handleOpenModal = useCallback(() => {
+    setSelectedPlan(null);
     setIsCreatePlanModalVisible(true);
   }, []);
   
   const handleCloseModal = useCallback(() => {
     setIsCreatePlanModalVisible(false);
+    setSelectedPlan(null);
   }, []);
 
   // Generate week days
@@ -167,15 +179,6 @@ export default function MealPlanScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]}>
           {selectedDay ? `${selectedDay.day}'s Meal Plan` : 'No Plan Created'}
         </Text>
-        {selectedDay && (
-          <Pressable
-            style={[styles.editButton, { backgroundColor: colors.primary + '20' }]}>
-            <Edit2 size={16} color={colors.primary} />
-            <Text style={[styles.editButtonText, { color: colors.primary }]}>
-              Edit Plan
-            </Text>
-          </Pressable>
-        )}
       </View>
       
       <ScrollView
@@ -184,7 +187,10 @@ export default function MealPlanScreen() {
         showsVerticalScrollIndicator={false}>
         
         {selectedDay?.meals.map((meal) => (
-          <View key={meal.id} style={styles.mealItem}>
+          <Pressable
+            key={meal.id}
+            style={styles.mealItem}
+            onPress={() => handleMealPress(meal)}>
             <View style={[styles.timelineConnector, { backgroundColor: colors.border }]} />
             <View 
               style={[
@@ -230,7 +236,7 @@ export default function MealPlanScreen() {
                 </Pressable>
               </View>
             </View>
-          </View>
+          </Pressable>
         ))}
         
         <Pressable 
@@ -306,6 +312,8 @@ export default function MealPlanScreen() {
         visible={isCreatePlanModalVisible}
         onClose={handleCloseModal}
         onSave={handleCreatePlan}
+        initialData={selectedPlan}
+        mode={selectedPlan ? 'edit' : 'add'}
       />
     </SafeAreaView>
   );

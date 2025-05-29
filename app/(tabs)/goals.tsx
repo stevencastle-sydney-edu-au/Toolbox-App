@@ -25,6 +25,7 @@ export default function GoalsScreen() {
   const [isAddGoalModalVisible, setIsAddGoalModalVisible] = useState(false);
   const [isAddExposureModalVisible, setIsAddExposureModalVisible] = useState(false);
   const [isAddCheckInModalVisible, setIsAddCheckInModalVisible] = useState(false);
+  const [selectedGoal, setSelectedGoal] = useState(null);
 
   // Fetch goals with proper error handling
   const { data, loading, error, refetch } = useQuery(GET_GOALS, {
@@ -68,6 +69,7 @@ export default function GoalsScreen() {
         },
       });
       setIsAddGoalModalVisible(false);
+      setSelectedGoal(null);
     } catch (error) {
       console.error('Error adding goal:', error);
     }
@@ -111,8 +113,14 @@ export default function GoalsScreen() {
     setIsAddCheckInModalVisible(false);
   };
 
+  const handleGoalPress = (goal: any) => {
+    setSelectedGoal(goal);
+    setIsAddGoalModalVisible(true);
+  };
+
   const handleAddNew = () => {
     if (activeTab === 'goals') {
+      setSelectedGoal(null);
       setIsAddGoalModalVisible(true);
     } else if (activeTab === 'exposures') {
       setIsAddExposureModalVisible(true);
@@ -232,7 +240,8 @@ export default function GoalsScreen() {
                   style={[
                     styles.goalCard, 
                     { backgroundColor: colors.cardBackground, borderColor: colors.border }
-                  ]}>
+                  ]}
+                  onPress={() => handleGoalPress(goal)}>
                   <View style={styles.goalHeader}>
                     <View 
                       style={[
@@ -318,7 +327,8 @@ export default function GoalsScreen() {
                   style={[
                     styles.goalCard, 
                     { backgroundColor: colors.cardBackground, borderColor: colors.border }
-                  ]}>
+                  ]}
+                  onPress={() => handleGoalPress(goal)}>
                   <View style={styles.goalHeader}>
                     <View 
                       style={[
@@ -524,12 +534,18 @@ export default function GoalsScreen() {
              activeTab === 'exposures' ? 'Create Exposure' : 'New Check-in'}
           </Text>
         </Pressable>
+      
       </View>
 
       <AddGoalModal
         visible={isAddGoalModalVisible}
-        onClose={() => setIsAddGoalModalVisible(false)}
+        onClose={() => {
+          setIsAddGoalModalVisible(false);
+          setSelectedGoal(null);
+        }}
         onSave={handleAddGoal}
+        initialData={selectedGoal}
+        mode={selectedGoal ? 'edit' : 'add'}
       />
 
       <AddExposureModal

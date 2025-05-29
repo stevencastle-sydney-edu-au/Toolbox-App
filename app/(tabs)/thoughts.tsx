@@ -21,6 +21,7 @@ export default function ThoughtsScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddThoughtModalVisible, setIsAddThoughtModalVisible] = useState(false);
+  const [selectedThought, setSelectedThought] = useState(null);
 
   // Fetch thought logs
   const { data, loading, error } = useQuery(GET_THOUGHT_LOGS);
@@ -51,9 +52,15 @@ export default function ThoughtsScreen() {
         },
       });
       setIsAddThoughtModalVisible(false);
+      setSelectedThought(null);
     } catch (error) {
       console.error('Error adding thought log:', error);
     }
+  };
+
+  const handleThoughtPress = (thought: any) => {
+    setSelectedThought(thought);
+    setIsAddThoughtModalVisible(true);
   };
 
   if (loading) {
@@ -129,7 +136,8 @@ export default function ThoughtsScreen() {
               style={[
                 styles.thoughtCard, 
                 { backgroundColor: colors.cardBackground, borderColor: colors.border }
-              ]}>
+              ]}
+              onPress={() => handleThoughtPress(log)}>
               <View style={styles.thoughtHeader}>
                 <View>
                   <Text style={[styles.thoughtDate, { color: colors.muted }]}>
@@ -347,7 +355,10 @@ export default function ThoughtsScreen() {
       <View style={[styles.addButtonContainer, { backgroundColor: colors.background }]}>
         <Pressable 
           style={[styles.addButton, { backgroundColor: colors.primary }]}
-          onPress={() => setIsAddThoughtModalVisible(true)}>
+          onPress={() => {
+            setSelectedThought(null);
+            setIsAddThoughtModalVisible(true);
+          }}>
           <PlusCircle size={20} color="#FFF" />
           <Text style={styles.addButtonText}>New Thought Entry</Text>
         </Pressable>
@@ -355,8 +366,13 @@ export default function ThoughtsScreen() {
 
       <AddThoughtModal
         visible={isAddThoughtModalVisible}
-        onClose={() => setIsAddThoughtModalVisible(false)}
+        onClose={() => {
+          setIsAddThoughtModalVisible(false);
+          setSelectedThought(null);
+        }}
         onSave={handleAddThought}
+        initialData={selectedThought}
+        mode={selectedThought ? 'edit' : 'add'}
       />
     </SafeAreaView>
   );
