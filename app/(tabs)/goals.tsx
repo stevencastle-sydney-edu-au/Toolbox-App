@@ -25,7 +25,7 @@ export default function GoalsScreen() {
   const [isAddGoalModalVisible, setIsAddGoalModalVisible] = useState(false);
   const [isAddExposureModalVisible, setIsAddExposureModalVisible] = useState(false);
   const [isAddCheckInModalVisible, setIsAddCheckInModalVisible] = useState(false);
-  const [selectedGoal, setSelectedGoal] = useState(null);
+  const [selectedGoal, setSelectedGoal] = useState<any>(null);
 
   // Fetch goals with proper error handling
   const { data, loading, error, refetch } = useQuery(GET_GOALS, {
@@ -63,15 +63,34 @@ export default function GoalsScreen() {
     steps: { description: string }[];
   }) => {
     try {
-      await addGoal({
-        variables: {
-          input: goalData,
-        },
-      });
+      if (selectedGoal) {
+        // If editing, include the goal ID and maintain completed status of steps
+        const updatedSteps = goalData.steps.map((step, index) => ({
+          ...step,
+          completed: selectedGoal.steps[index]?.completed || false,
+        }));
+
+        await addGoal({
+          variables: {
+            input: {
+              ...goalData,
+              id: selectedGoal.id,
+              steps: updatedSteps,
+            },
+          },
+        });
+      } else {
+        // If adding new goal
+        await addGoal({
+          variables: {
+            input: goalData,
+          },
+        });
+      }
       setIsAddGoalModalVisible(false);
       setSelectedGoal(null);
     } catch (error) {
-      console.error('Error adding goal:', error);
+      console.error('Error adding/updating goal:', error);
     }
   };
 
@@ -534,7 +553,6 @@ export default function GoalsScreen() {
              activeTab === 'exposures' ? 'Create Exposure' : 'New Check-in'}
           </Text>
         </Pressable>
-      
       </View>
 
       <AddGoalModal
