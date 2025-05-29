@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Slot, Stack } from 'expo-router';
+import { Slot, Stack, Redirect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import * as SplashScreen from 'expo-splash-screen';
@@ -46,6 +46,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
+      <Redirect href="/(auth)/login" />
       <StatusBar style="auto" />
     </>
   );
