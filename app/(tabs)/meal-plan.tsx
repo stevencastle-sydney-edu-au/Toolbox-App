@@ -9,8 +9,10 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { CirclePlus as PlusCircle, ChevronLeft, ChevronRight, Clock, CreditCard as Edit2 } from 'lucide-react-native';
+import { useQuery, useMutation } from '@apollo/client';
+import { GET_MEAL_PLANS } from '@/graphql/operations/meal-plans';
+import { CREATE_MEAL_PLAN } from '@/graphql/operations/meal-plans';
 import Colors from '@/constants/Colors';
-import { mealPlans } from '@/utils/sampleData';
 import CreatePlanModal from '@/components/CreatePlanModal';
 
 export default function MealPlanScreen() {
@@ -18,8 +20,18 @@ export default function MealPlanScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [isCreatePlanModalVisible, setIsCreatePlanModalVisible] = useState(false);
-  
-  const selectedDay = useMemo(() => mealPlans[selectedDayIndex], [selectedDayIndex]);
+
+  // Fetch meal plans
+  const { data, loading, error } = useQuery(GET_MEAL_PLANS);
+
+  // Create meal plan mutation
+  const [createMealPlan] = useMutation(CREATE_MEAL_PLAN, {
+    refetchQueries: [{ query: GET_MEAL_PLANS }],
+  });
+
+  const selectedDay = useMemo(() => 
+    data?.mealPlans[selectedDayIndex] || null
+  , [data?.mealPlans, selectedDayIndex]);
   
   const handlePreviousDay = useCallback(() => {
     if (selectedDayIndex > 0) {
@@ -28,15 +40,23 @@ export default function MealPlanScreen() {
   }, [selectedDayIndex]);
   
   const handleNextDay = useCallback(() => {
-    if (selectedDayIndex < mealPlans.length - 1) {
+    if (data?.mealPlans && selectedDayIndex < data.mealPlans.length - 1) {
       setSelectedDayIndex(prev => prev + 1);
     }
-  }, [selectedDayIndex, mealPlans.length]);
+  }, [selectedDayIndex, data?.mealPlans?.length]);
   
-  const handleCreatePlan = useCallback((planData: { date: string; meals: any[] }) => {
-    console.log('New plan data:', planData);
-    setIsCreatePlanModalVisible(false);
-  }, []);
+  const handleCreatePlan = async (planData: { date: string; meals: any[] }) => {
+    try {
+      await createMealPlan({
+        variables: {
+          input: planData,
+        },
+      });
+      setIsCreatePlanModalVisible(false);
+    } catch (error) {
+      console.error('Error creating meal plan:', error);
+    }
+  };
   
   const handleOpenModal = useCallback(() => {
     setIsCreatePlanModalVisible(true);
@@ -45,7 +65,7 @@ export default function MealPlanScreen() {
   const handleCloseModal = useCallback(() => {
     setIsCreatePlanModalVisible(false);
   }, []);
-  
+
   // Generate week days
   const weekDays = useMemo(() => {
     const days = [];
@@ -64,6 +84,29 @@ export default function MealPlanScreen() {
     
     return days;
   }, []);
+
+  if (loading) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.loadingText, { color: colors.text }]}>Loading meal plans...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.errorContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.error }]}>
+          Error loading meal plans. Please try again.
+        </Text>
+        <Pressable
+          style={[styles.retryButton, { backgroundColor: colors.primary }]}
+          onPress={() => window.location.reload()}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -122,15 +165,17 @@ export default function MealPlanScreen() {
       
       <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: colors.text }]}>
-          {selectedDay.day}'s Meal Plan
+          {selectedDay ? `${selectedDay.day}'s Meal Plan` : 'No Plan Created'}
         </Text>
-        <Pressable
-          style={[styles.editButton, { backgroundColor: colors.primary + '20' }]}>
-          <Edit2 size={16} color={colors.primary} />
-          <Text style={[styles.editButtonText, { color: colors.primary }]}>
-            Edit Plan
-          </Text>
-        </Pressable>
+        {selectedDay && (
+          <Pressable
+            style={[styles.editButton, { backgroundColor: colors.primary + '20' }]}>
+            <Edit2 size={16} color={colors.primary} />
+            <Text style={[styles.editButtonText, { color: colors.primary }]}>
+              Edit Plan
+            </Text>
+          </Pressable>
+        )}
       </View>
       
       <ScrollView
@@ -138,7 +183,7 @@ export default function MealPlanScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
         
-        {selectedDay.meals.map((meal) => (
+        {selectedDay?.meals.map((meal) => (
           <View key={meal.id} style={styles.mealItem}>
             <View style={[styles.timelineConnector, { backgroundColor: colors.border }]} />
             <View 
@@ -270,6 +315,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  retryButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+  },
   calendarContainer: {
     paddingVertical: 16,
     borderBottomLeftRadius: 16,
@@ -290,6 +366,7 @@ const styles = StyleSheet.create({
   monthTitle: {
     fontSize: 18,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   monthControls: {
     flexDirection: 'row',
@@ -318,9 +395,11 @@ const styles = StyleSheet.create({
   weekDayName: {
     fontSize: 12,
     marginBottom: 4,
+    fontFamily: 'Inter-Regular',
   },
   weekDayNumber: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
   },
   header: {
     flexDirection: 'row',
@@ -333,6 +412,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   editButton: {
     flexDirection: 'row',
@@ -345,6 +425,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginLeft: 4,
+    fontFamily: 'Inter-SemiBold',
   },
   scrollView: {
     flex: 1,
@@ -382,6 +463,7 @@ const styles = StyleSheet.create({
   mealTime: {
     fontSize: 14,
     marginTop: 12,
+    fontFamily: 'Inter-Regular',
   },
   mealContent: {
     flex: 1,
@@ -393,10 +475,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
+    fontFamily: 'Inter-SemiBold',
   },
   mealDescription: {
     fontSize: 14,
     marginBottom: 12,
+    fontFamily: 'Inter-Regular',
   },
   mealControls: {
     flexDirection: 'row',
@@ -410,6 +494,7 @@ const styles = StyleSheet.create({
   mealControlText: {
     fontSize: 12,
     fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
   },
   addMealButton: {
     flexDirection: 'row',
@@ -425,6 +510,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     marginLeft: 8,
+    fontFamily: 'Inter-SemiBold',
   },
   templateSection: {
     marginBottom: 24,
@@ -433,6 +519,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 16,
+    fontFamily: 'Inter-SemiBold',
   },
   templateCard: {
     borderRadius: 12,
@@ -452,10 +539,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
+    fontFamily: 'Inter-SemiBold',
   },
   templateDescription: {
     fontSize: 14,
     marginBottom: 12,
+    fontFamily: 'Inter-Regular',
   },
   templateButton: {
     alignSelf: 'flex-start',
@@ -466,6 +555,7 @@ const styles = StyleSheet.create({
   templateButtonText: {
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
   },
   addButtonContainer: {
     position: 'absolute',
@@ -488,5 +578,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+    fontFamily: 'Inter-SemiBold',
   },
 });
