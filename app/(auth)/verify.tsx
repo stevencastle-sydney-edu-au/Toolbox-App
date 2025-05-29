@@ -1,13 +1,26 @@
 import { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useMutation } from '@apollo/client';
+import { VERIFY_CODE } from '@/graphql/operations/auth';
 import Colors from '@/constants/Colors';
 
 export default function VerifyScreen() {
   const router = useRouter();
   const [code, setCode] = useState(['', '', '', '', '', '']);
-  const [isLoading, setIsLoading] = useState(false);
+  const [verifyError, setVerifyError] = useState('');
   const inputRefs = useRef<TextInput[]>([]);
+
+  const [verifyCode, { loading }] = useMutation(VERIFY_CODE, {
+    onCompleted: (data) => {
+      if (data.verifyCode.token) {
+        router.replace('/(tabs)');
+      }
+    },
+    onError: (error) => {
+      setVerifyError(error.message);
+    },
+  });
 
   const handleCodeChange = (text: string, index: number) => {
     if (text.length > 1) {
@@ -30,6 +43,9 @@ export default function VerifyScreen() {
         inputRefs.current[index + 1]?.focus();
       }
     }
+
+    // Clear error when user types
+    setVerifyError('');
   };
 
   const handleKeyPress = (e: any, index: number) => {
@@ -41,15 +57,15 @@ export default function VerifyScreen() {
     }
   };
 
-  const handleVerify = () => {
-    if (code.join('').length !== 6) return;
+  const handleVerify = async () => {
+    const verificationCode = code.join('');
+    if (verificationCode.length !== 6) return;
     
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      router.replace('/(tabs)');
-    }, 1000);
+    try {
+      await verifyCode({ variables: { code: verificationCode } });
+    } catch (error) {
+      // Error is handled by onError callback
+    }
   };
 
   useEffect(() => {
@@ -77,7 +93,8 @@ export default function VerifyScreen() {
                 ref={el => inputRefs.current[index] = el as TextInput}
                 style={[
                   styles.codeInput,
-                  digit && styles.codeInputFilled
+                  digit && styles.codeInputFilled,
+                  verifyError && styles.codeInputError
                 ]}
                 maxLength={6}
                 value={digit}
@@ -88,15 +105,19 @@ export default function VerifyScreen() {
             ))}
           </View>
 
+          {verifyError ? (
+            <Text style={styles.errorText}>{verifyError}</Text>
+          ) : null}
+
           <Pressable
             style={[
               styles.button,
-              (code.join('').length !== 6 || isLoading) && styles.buttonDisabled
+              (code.join('').length !== 6 || loading) && styles.buttonDisabled
             ]}
-            disabled={code.join('').length !== 6 || isLoading}
+            disabled={code.join('').length !== 6 || loading}
             onPress={handleVerify}>
             <Text style={styles.buttonText}>
-              {isLoading ? 'Verifying...' : 'Verify Code'}
+              {loading ? 'Verifying...' : 'Verify Code'}
             </Text>
           </Pressable>
 
@@ -159,6 +180,17 @@ const styles = StyleSheet.create({
   codeInputFilled: {
     borderColor: Colors.light.primary,
     backgroundColor: Colors.light.primary + '10',
+  },
+  codeInputError: {
+    borderColor: Colors.light.error,
+    backgroundColor: Colors.light.error + '10',
+  },
+  errorText: {
+    color: Colors.light.error,
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    textAlign: 'center',
+    marginTop: -16,
   },
   button: {
     backgroundColor: Colors.light.primary,

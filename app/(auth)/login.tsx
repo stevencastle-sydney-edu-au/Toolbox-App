@@ -2,22 +2,32 @@ import { useState } from 'react';
 import { View, Text, TextInput, Pressable, Image, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Mail } from 'lucide-react-native';
+import { useMutation } from '@apollo/client';
+import { LOGIN } from '@/graphql/operations/auth';
 import Colors from '@/constants/Colors';
 
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  
+  const [login, { loading }] = useMutation(LOGIN, {
+    onCompleted: () => {
+      router.push('/verify');
+    },
+    onError: (error) => {
+      setLoginError(error.message);
+    },
+  });
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email) return;
     
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      router.push('/verify');
-    }, 1000);
+    try {
+      await login({ variables: { email } });
+    } catch (error) {
+      // Error is handled by onError callback
+    }
   };
 
   return (
@@ -48,19 +58,26 @@ export default function LoginScreen() {
               autoCapitalize="none"
               autoComplete="email"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(text) => {
+                setEmail(text);
+                setLoginError(''); // Clear error when user types
+              }}
             />
           </View>
+
+          {loginError ? (
+            <Text style={styles.errorText}>{loginError}</Text>
+          ) : null}
 
           <Pressable
             style={[
               styles.button,
-              (!email || isLoading) && styles.buttonDisabled
+              (!email || loading) && styles.buttonDisabled
             ]}
-            disabled={!email || isLoading}
+            disabled={!email || loading}
             onPress={handleLogin}>
             <Text style={styles.buttonText}>
-              {isLoading ? 'Sending Code...' : 'Send Login Code'}
+              {loading ? 'Sending Code...' : 'Send Login Code'}
             </Text>
           </Pressable>
 
@@ -133,6 +150,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter-Regular',
     color: Colors.light.text,
+  },
+  errorText: {
+    color: Colors.light.error,
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    marginTop: -8,
   },
   button: {
     backgroundColor: Colors.light.primary,
