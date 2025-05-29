@@ -6,6 +6,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { View, Image, StyleSheet } from 'react-native';
 import { useFonts } from 'expo-font';
 import { Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
+import { ApolloProvider } from '@apollo/client';
+import { client } from '@/graphql/client';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -40,7 +42,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <ApolloProvider client={client}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -48,7 +50,7 @@ export default function RootLayout() {
       </Stack>
       <Redirect href="/(auth)/login" />
       <StatusBar style="auto" />
-    </>
+    </ApolloProvider>
   );
 }
 
