@@ -9,8 +9,10 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { CirclePlus as PlusCircle, CircleCheck as CheckCircle2, Circle, ChevronRight, ArrowUpRight, Target } from 'lucide-react-native';
+import { useQuery, useMutation } from '@apollo/client';
+import { GET_GOALS } from '@/graphql/operations/goals';
+import { ADD_GOAL, UPDATE_GOAL_STEP } from '@/graphql/operations/goals';
 import Colors from '@/constants/Colors';
-import { goals } from '@/utils/sampleData';
 import AddGoalModal from '@/components/AddGoalModal';
 import AddExposureModal from '@/components/AddExposureModal';
 import AddCheckInModal from '@/components/AddCheckInModal';
@@ -22,6 +24,19 @@ export default function GoalsScreen() {
   const [isAddGoalModalVisible, setIsAddGoalModalVisible] = useState(false);
   const [isAddExposureModalVisible, setIsAddExposureModalVisible] = useState(false);
   const [isAddCheckInModalVisible, setIsAddCheckInModalVisible] = useState(false);
+
+  // Fetch goals
+  const { data, loading, error } = useQuery(GET_GOALS);
+
+  // Add goal mutation
+  const [addGoal] = useMutation(ADD_GOAL, {
+    refetchQueries: [{ query: GET_GOALS }],
+  });
+
+  // Update goal step mutation
+  const [updateGoalStep] = useMutation(UPDATE_GOAL_STEP, {
+    refetchQueries: [{ query: GET_GOALS }],
+  });
   
   const getTabColor = (tab: 'goals' | 'exposures' | 'check-ins') => {
     switch (tab) {
@@ -34,15 +49,37 @@ export default function GoalsScreen() {
     }
   };
 
-  const handleAddGoal = (goalData: {
+  const handleAddGoal = async (goalData: {
     title: string;
     description: string;
     category: string;
     targetDate: string;
     steps: { description: string }[];
   }) => {
-    console.log('New goal data:', goalData);
-    setIsAddGoalModalVisible(false);
+    try {
+      await addGoal({
+        variables: {
+          input: goalData,
+        },
+      });
+      setIsAddGoalModalVisible(false);
+    } catch (error) {
+      console.error('Error adding goal:', error);
+    }
+  };
+
+  const handleToggleStep = async (goalId: string, stepId: string, completed: boolean) => {
+    try {
+      await updateGoalStep({
+        variables: {
+          goalId,
+          stepId,
+          completed: !completed,
+        },
+      });
+    } catch (error) {
+      console.error('Error updating step:', error);
+    }
   };
 
   const handleAddExposure = (exposureData: {
@@ -78,6 +115,32 @@ export default function GoalsScreen() {
       setIsAddCheckInModalVisible(true);
     }
   };
+
+  if (loading) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.loadingText, { color: colors.text }]}>Loading goals...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.errorContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.error }]}>
+          Error loading goals. Please try again.
+        </Text>
+        <Pressable
+          style={[styles.retryButton, { backgroundColor: colors.primary }]}
+          onPress={() => window.location.reload()}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  const inProgressGoals = data?.goals.filter(g => g.status === 'IN_PROGRESS') || [];
+  const notStartedGoals = data?.goals.filter(g => g.status === 'NOT_STARTED') || [];
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -153,11 +216,11 @@ export default function GoalsScreen() {
                   In Progress
                 </Text>
                 <Text style={[styles.sectionCount, { color: colors.muted }]}>
-                  {goals.filter(g => g.status === 'In Progress').length}
+                  {inProgressGoals.length}
                 </Text>
               </View>
               
-              {goals.filter(goal => goal.status === 'In Progress').map((goal) => (
+              {inProgressGoals.map((goal) => (
                 <Pressable
                   key={goal.id}
                   style={[
@@ -207,7 +270,10 @@ export default function GoalsScreen() {
                   
                   <View style={styles.stepsContainer}>
                     {goal.steps.map((step) => (
-                      <View key={step.id} style={styles.stepItem}>
+                      <Pressable 
+                        key={step.id} 
+                        style={styles.stepItem}
+                        onPress={() => handleToggleStep(goal.id, step.id, step.completed)}>
                         {step.completed ? (
                           <CheckCircle2 size={18} color={colors.success} />
                         ) : (
@@ -223,7 +289,7 @@ export default function GoalsScreen() {
                           ]}>
                           {step.description}
                         </Text>
-                      </View>
+                      </Pressable>
                     ))}
                   </View>
                 </Pressable>
@@ -236,11 +302,11 @@ export default function GoalsScreen() {
                   Not Started
                 </Text>
                 <Text style={[styles.sectionCount, { color: colors.muted }]}>
-                  {goals.filter(g => g.status === 'Not Started').length}
+                  {notStartedGoals.length}
                 </Text>
               </View>
               
-              {goals.filter(goal => goal.status === 'Not Started').map((goal) => (
+              {notStartedGoals.map((goal) => (
                 <Pressable
                   key={goal.id}
                   style={[
@@ -479,6 +545,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  retryButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+  },
   tabContainer: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -494,6 +591,7 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   scrollView: {
     flex: 1,
@@ -509,9 +607,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     marginBottom: 8,
+    fontFamily: 'Inter-Bold',
   },
   headerSubtitle: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
   },
   goalsSection: {
     marginBottom: 24,
@@ -524,11 +624,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   sectionCount: {
     fontSize: 16,
     fontWeight: '500',
     marginLeft: 8,
+    fontFamily: 'Inter-Regular',
   },
   goalCard: {
     borderRadius: 12,
@@ -550,6 +652,7 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 12,
     fontWeight: '500',
+    fontFamily: 'Inter-SemiBold',
   },
   dateContainer: {
     flexDirection: 'row',
@@ -557,15 +660,18 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 12,
+    fontFamily: 'Inter-Regular',
   },
   goalTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 8,
+    fontFamily: 'Inter-SemiBold',
   },
   goalDescription: {
     fontSize: 14,
     marginBottom: 16,
+    fontFamily: 'Inter-Regular',
   },
   progressContainer: {
     marginBottom: 16,
@@ -581,6 +687,7 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 12,
+    fontFamily: 'Inter-Regular',
   },
   stepsContainer: {
     marginBottom: 8,
@@ -593,6 +700,7 @@ const styles = StyleSheet.create({
   stepText: {
     fontSize: 14,
     marginLeft: 8,
+    fontFamily: 'Inter-Regular',
   },
   startButton: {
     flexDirection: 'row',
@@ -605,6 +713,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginRight: 4,
+    fontFamily: 'Inter-SemiBold',
   },
   exposuresSection: {
     marginBottom: 24,
@@ -624,10 +733,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginLeft: 12,
+    fontFamily: 'Inter-SemiBold',
   },
   exposureDescription: {
     fontSize: 14,
     marginBottom: 16,
+    fontFamily: 'Inter-Regular',
   },
   exposureButton: {
     flexDirection: 'row',
@@ -640,6 +751,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginRight: 4,
+    fontFamily: 'Inter-SemiBold',
   },
   checkInsSection: {
     marginBottom: 24,
@@ -647,6 +759,7 @@ const styles = StyleSheet.create({
   checkInsDescription: {
     fontSize: 14,
     marginBottom: 16,
+    fontFamily: 'Inter-Regular',
   },
   checkInCard: {
     borderRadius: 12,
@@ -658,10 +771,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 8,
+    fontFamily: 'Inter-SemiBold',
   },
   checkInDescription: {
     fontSize: 14,
     marginBottom: 16,
+    fontFamily: 'Inter-Regular',
   },
   checkInButton: {
     alignItems: 'center',
@@ -672,6 +787,7 @@ const styles = StyleSheet.create({
   checkInButtonText: {
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   addButtonContainer: {
     position: 'absolute',
@@ -694,5 +810,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+    fontFamily: 'Inter-SemiBold',
   },
 });
