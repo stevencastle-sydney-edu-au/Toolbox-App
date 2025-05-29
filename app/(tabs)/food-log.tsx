@@ -25,6 +25,12 @@ export default function FoodLogScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const [activeDate, setActiveDate] = useState('2025-05-02');
   const [isAddMealModalVisible, setIsAddMealModalVisible] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<{
+    title: string;
+    description: string;
+    time: string;
+    tags: string[];
+  } | null>(null);
   
   // Group entries by date
   const entriesByDate = foodEntries.reduce((acc, entry) => {
@@ -54,6 +60,17 @@ export default function FoodLogScreen() {
     // Here you would typically save the meal data to your backend
     console.log('New meal data:', mealData);
     setIsAddMealModalVisible(false);
+    setSelectedMeal(null);
+  };
+
+  const handleEditMeal = (meal: {
+    title: string;
+    description: string;
+    time: string;
+    tags: string[];
+  }) => {
+    setSelectedMeal(meal);
+    setIsAddMealModalVisible(true);
   };
 
   return (
@@ -96,7 +113,14 @@ export default function FoodLogScreen() {
                 </View>
               </View>
             </View>
-            <Pressable style={styles.moreButton}>
+            <Pressable 
+              style={styles.moreButton}
+              onPress={() => handleEditMeal({
+                title: 'Oatmeal with berries',
+                description: '1 cup oatmeal, 1/4 cup mixed berries, 1 tbsp honey',
+                time: '8:30 AM',
+                tags: ['Balanced', 'Planned']
+              })}>
               <MoreVertical size={20} color={colors.muted} />
             </Pressable>
           </View>
@@ -110,14 +134,24 @@ export default function FoodLogScreen() {
                 1 cup, unsweetened
               </Text>
             </View>
-            <Pressable style={styles.moreButton}>
+            <Pressable 
+              style={styles.moreButton}
+              onPress={() => handleEditMeal({
+                title: 'Green tea',
+                description: '1 cup, unsweetened',
+                time: '8:30 AM',
+                tags: []
+              })}>
               <MoreVertical size={20} color={colors.muted} />
             </Pressable>
           </View>
           
           <Pressable 
             style={[styles.addFoodButton, { borderColor: colors.border }]}
-            onPress={() => setIsAddMealModalVisible(true)}>
+            onPress={() => {
+              setSelectedMeal(null);
+              setIsAddMealModalVisible(true);
+            }}>
             <PlusCircle size={16} color={colors.primary} />
             <Text style={[styles.addFoodText, { color: colors.primary }]}>
               Add Food
@@ -158,7 +192,10 @@ export default function FoodLogScreen() {
           
           <Pressable 
             style={[styles.addFoodButton, { borderColor: colors.border }]}
-            onPress={() => setIsAddMealModalVisible(true)}>
+            onPress={() => {
+              setSelectedMeal(null);
+              setIsAddMealModalVisible(true);
+            }}>
             <PlusCircle size={16} color={colors.primary} />
             <Text style={[styles.addFoodText, { color: colors.primary }]}>
               Add Food
@@ -186,14 +223,24 @@ export default function FoodLogScreen() {
                 </View>
               </View>
             </View>
-            <Pressable style={styles.moreButton}>
+            <Pressable 
+              style={styles.moreButton}
+              onPress={() => handleEditMeal({
+                title: 'Apple with almond butter',
+                description: '1 medium apple, 1 tbsp almond butter',
+                time: '3:00 PM',
+                tags: ['Planned']
+              })}>
               <MoreVertical size={20} color={colors.muted} />
             </Pressable>
           </View>
           
           <Pressable 
             style={[styles.addFoodButton, { borderColor: colors.border }]}
-            onPress={() => setIsAddMealModalVisible(true)}>
+            onPress={() => {
+              setSelectedMeal(null);
+              setIsAddMealModalVisible(true);
+            }}>
             <PlusCircle size={16} color={colors.primary} />
             <Text style={[styles.addFoodText, { color: colors.primary }]}>
               Add Food
@@ -214,7 +261,10 @@ export default function FoodLogScreen() {
           
           <Pressable 
             style={[styles.addFoodButton, { borderColor: colors.border }]}
-            onPress={() => setIsAddMealModalVisible(true)}>
+            onPress={() => {
+              setSelectedMeal(null);
+              setIsAddMealModalVisible(true);
+            }}>
             <PlusCircle size={16} color={colors.primary} />
             <Text style={[styles.addFoodText, { color: colors.primary }]}>
               Add Food
@@ -280,7 +330,10 @@ export default function FoodLogScreen() {
       <View style={[styles.addButtonContainer, { backgroundColor: colors.background }]}>
         <Pressable 
           style={[styles.addButton, { backgroundColor: colors.primary }]}
-          onPress={() => setIsAddMealModalVisible(true)}>
+          onPress={() => {
+            setSelectedMeal(null);
+            setIsAddMealModalVisible(true);
+          }}>
           <PlusCircle size={20} color="#FFF" />
           <Text style={styles.addButtonText}>Add Meal</Text>
         </Pressable>
@@ -293,8 +346,13 @@ export default function FoodLogScreen() {
 
       <AddMealModal
         visible={isAddMealModalVisible}
-        onClose={() => setIsAddMealModalVisible(false)}
+        onClose={() => {
+          setIsAddMealModalVisible(false);
+          setSelectedMeal(null);
+        }}
         onSave={handleAddMeal}
+        initialData={selectedMeal}
+        mode={selectedMeal ? 'edit' : 'add'}
       />
     </SafeAreaView>
   );

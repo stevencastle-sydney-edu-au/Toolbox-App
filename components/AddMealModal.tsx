@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -12,18 +12,28 @@ import {
 import { X, Camera, Clock } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
 
+type MealData = {
+  title: string;
+  description: string;
+  time: string;
+  tags: string[];
+};
+
 type AddMealModalProps = {
   visible: boolean;
   onClose: () => void;
-  onSave: (mealData: {
-    title: string;
-    description: string;
-    time: string;
-    tags: string[];
-  }) => void;
+  onSave: (mealData: MealData) => void;
+  initialData?: MealData;
+  mode?: 'add' | 'edit';
 };
 
-export default function AddMealModal({ visible, onClose, onSave }: AddMealModalProps) {
+export default function AddMealModal({ 
+  visible, 
+  onClose, 
+  onSave, 
+  initialData,
+  mode = 'add' 
+}: AddMealModalProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   
@@ -33,6 +43,16 @@ export default function AddMealModal({ visible, onClose, onSave }: AddMealModalP
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   
   const availableTags = ['Balanced', 'Planned', 'Challenge', 'Protein', 'Vegetarian'];
+
+  // Update form when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title);
+      setDescription(initialData.description);
+      setTime(initialData.time);
+      setSelectedTags(initialData.tags);
+    }
+  }, [initialData]);
   
   const toggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -68,7 +88,9 @@ export default function AddMealModal({ visible, onClose, onSave }: AddMealModalP
       <View style={[styles.modalContainer, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
         <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
           <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Add Meal</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              {mode === 'add' ? 'Add Meal' : 'Edit Meal'}
+            </Text>
             <Pressable onPress={onClose} style={styles.closeButton}>
               <X size={24} color={colors.text} />
             </Pressable>
@@ -195,7 +217,9 @@ export default function AddMealModal({ visible, onClose, onSave }: AddMealModalP
             <Pressable
               style={[styles.saveButton, { backgroundColor: colors.primary }]}
               onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Save Meal</Text>
+              <Text style={styles.saveButtonText}>
+                {mode === 'add' ? 'Save Meal' : 'Update Meal'}
+              </Text>
             </Pressable>
           </View>
         </View>
