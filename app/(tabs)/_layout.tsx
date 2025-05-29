@@ -36,7 +36,7 @@ export default function TabLayout() {
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <Image
               source={require('@/assets/images/ioilogo.png')}
-              style={{ width: 200, height: 200 }}
+              style={{ width: 200, height: 100 }}
               resizeMode="contain"
             />
           </View>
