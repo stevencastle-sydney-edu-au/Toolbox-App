@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Slot, Stack, Redirect } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import * as SplashScreen from 'expo-splash-screen';
@@ -44,12 +44,10 @@ export default function RootLayout() {
   return (
     <ApolloProvider client={client}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen name="+not-found" />
       </Stack>
-      {/* Remove the automatic redirect to login */}
-      <Slot />
       <StatusBar style="auto" />
     </ApolloProvider>
   );
