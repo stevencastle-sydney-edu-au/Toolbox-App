@@ -9,16 +9,7 @@ import Colors from '@/constants/Colors';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const { data, loading, error } = useQuery(GET_USER, {
-    fetchPolicy: 'network-only', // Don't use cache for auth checks
-  });
-
-  // Handle authentication check and redirection in useEffect
-  React.useEffect(() => {
-    if (!loading && (!data?.me || error)) {
-      router.replace('/(auth)/login');
-    }
-  }, [loading, data?.me, error, router]);
+  const { data, loading, error } = useQuery(GET_USER);
 
   // Show loading indicator while checking auth status
   if (loading) {
@@ -27,6 +18,12 @@ export default function TabLayout() {
         <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].tint} />
       </View>
     );
+  }
+
+  // Handle authentication check and redirection
+  if (!data?.me || error) {
+    router.replace('/(auth)/login');
+    return null;
   }
 
   return (
