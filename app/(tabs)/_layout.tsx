@@ -7,9 +7,11 @@ import Colors from '@/constants/Colors';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { data, loading } = useQuery(GET_USER);
+  const { data, loading } = useQuery(GET_USER, {
+    fetchPolicy: 'network-only', // Don't use cache for auth checks
+  });
 
-  // If no user data and not loading, redirect to login
+  // Only redirect if we've confirmed there's no user
   if (!loading && !data?.me) {
     return <Redirect href="/(auth)/login" />;
   }
