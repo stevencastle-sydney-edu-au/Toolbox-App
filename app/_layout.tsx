@@ -13,6 +13,7 @@ import { client } from '@/graphql/client';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  // Call useFrameworkReady first to ensure proper initialization
   useFrameworkReady();
 
   const [fontsLoaded, fontError] = useFonts({
