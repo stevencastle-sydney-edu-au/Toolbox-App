@@ -11,5 +11,27 @@ const schema = makeExecutableSchema({
 
 export const client = new ApolloClient({
   link: new SchemaLink({ schema }),
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          goals: {
+            merge: false
+          },
+          thoughtLogs: {
+            merge: false
+          },
+          mealPlans: {
+            merge: false
+          },
+          foodEntries: {
+            merge: false
+          },
+          recentActivities: {
+            merge: false
+          }
+        }
+      }
+    }
+  }),
 });
