@@ -17,12 +17,15 @@ import {
   Clipboard,
   Smile,
 } from 'lucide-react-native';
+import { useQuery } from '@apollo/client';
+import { GET_USER } from '@/graphql/operations/user';
+import { GET_RECENT_ACTIVITIES } from '@/graphql/operations/activities';
+import { GET_UPCOMING_ITEMS } from '@/graphql/operations/activities';
 import Colors from '@/constants/Colors';
 import ProgressSummary from '@/components/ProgressSummary';
 import ToolboxCard from '@/components/ToolboxCard';
 import ActivityItem from '@/components/ActivityItem';
 import UpcomingCard from '@/components/UpcomingCard';
-import { recentActivities, upcomingItems, progressStats } from '@/utils/sampleData';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -30,13 +33,17 @@ export default function HomeScreen() {
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState<'recent' | 'upcoming'>('recent');
   
-  // Memoize filtered activities
-  const todayActivities = useMemo(() => {
-    return recentActivities.filter(
-      activity => activity.date === '2025-05-02'
-    );
-  }, []);
-
+  // Get user data and stats
+  const { data: userData, loading: userLoading } = useQuery(GET_USER);
+  
+  // Get recent activities for today
+  const { data: activitiesData, loading: activitiesLoading } = useQuery(GET_RECENT_ACTIVITIES, {
+    variables: { date: '2025-05-02' }, // TODO: Use actual current date
+  });
+  
+  // Get upcoming items
+  const { data: upcomingData, loading: upcomingLoading } = useQuery(GET_UPCOMING_ITEMS);
+  
   // Memoize tab selection handler
   const handleTabSelect = useCallback((tab: 'recent' | 'upcoming') => {
     setSelectedTab(tab);
@@ -52,6 +59,14 @@ export default function HomeScreen() {
     // Handle card press
   }, []);
 
+  if (userLoading || activitiesLoading || upcomingLoading) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.loadingText, { color: colors.text }]}>Loading...</Text>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView 
@@ -60,14 +75,14 @@ export default function HomeScreen() {
         
         <View style={styles.header}>
           <Text style={[styles.greeting, { color: colors.text }]}>
-            Hello, Sarah
+            Hello, {userData?.me?.name || 'User'}
           </Text>
           <Text style={[styles.date, { color: colors.muted }]}>
             Friday, May 2, 2025
           </Text>
         </View>
         
-        <ProgressSummary stats={progressStats} />
+        <ProgressSummary stats={userData?.me?.stats || { daysActive: 0, entriesLogged: 0, goalsCompleted: 0, streak: 0 }} />
         
         <View style={styles.toolboxSection}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -140,25 +155,25 @@ export default function HomeScreen() {
           
           {selectedTab === 'recent' ? (
             <View style={styles.activityList}>
-              {todayActivities.map((activity) => (
+              {activitiesData?.recentActivities.map((activity) => (
                 <ActivityItem 
                   key={activity.id}
                   title={activity.title}
                   time={activity.time}
-                  type={activity.type as any}
+                  type={activity.type.toLowerCase() as any}
                   description={activity.description}
                 />
               ))}
             </View>
           ) : (
             <View style={styles.upcomingList}>
-              {upcomingItems.map((item) => (
+              {upcomingData?.upcomingItems.map((item) => (
                 <UpcomingCard
                   key={item.id}
                   title={item.title}
                   date={item.date}
                   time={item.time}
-                  type={item.type}
+                  type={item.type.toLowerCase() as any}
                   onPress={handleUpcomingCardPress}
                 />
               ))}
@@ -228,6 +243,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+  },
   scrollContent: {
     paddingHorizontal: 16,
     paddingBottom: 32,
@@ -239,15 +263,18 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: 24,
     fontWeight: '700',
+    fontFamily: 'Inter-Bold',
   },
   date: {
     fontSize: 16,
     fontWeight: '500',
+    fontFamily: 'Inter-Regular',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 16,
+    fontFamily: 'Inter-SemiBold',
   },
   toolboxSection: {
     marginBottom: 24,
@@ -272,6 +299,7 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   activityList: {
     marginBottom: 8,
@@ -297,5 +325,6 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontWeight: '600',
     fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
   },
 });
