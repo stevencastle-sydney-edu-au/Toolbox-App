@@ -12,12 +12,14 @@ import { CirclePlus as PlusCircle, CircleCheck as CheckCircle2, Circle, ChevronR
 import Colors from '@/constants/Colors';
 import { goals } from '@/utils/sampleData';
 import AddGoalModal from '@/components/AddGoalModal';
+import AddExposureModal from '@/components/AddExposureModal';
 
 export default function GoalsScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [activeTab, setActiveTab] = useState<'goals' | 'exposures' | 'check-ins'>('goals');
   const [isAddGoalModalVisible, setIsAddGoalModalVisible] = useState(false);
+  const [isAddExposureModalVisible, setIsAddExposureModalVisible] = useState(false);
   
   const getTabColor = (tab: 'goals' | 'exposures' | 'check-ins') => {
     switch (tab) {
@@ -40,6 +42,27 @@ export default function GoalsScreen() {
     // Here you would typically save the goal data to your backend
     console.log('New goal data:', goalData);
     setIsAddGoalModalVisible(false);
+  };
+
+  const handleAddExposure = (exposureData: {
+    title: string;
+    description: string;
+    category: string;
+    difficulty: number;
+    steps: string[];
+    coping_strategies: string[];
+  }) => {
+    // Here you would typically save the exposure data to your backend
+    console.log('New exposure data:', exposureData);
+    setIsAddExposureModalVisible(false);
+  };
+
+  const handleAddNew = () => {
+    if (activeTab === 'goals') {
+      setIsAddGoalModalVisible(true);
+    } else if (activeTab === 'exposures') {
+      setIsAddExposureModalVisible(true);
+    }
   };
 
   return (
@@ -408,7 +431,7 @@ export default function GoalsScreen() {
             styles.addButton, 
             { backgroundColor: getTabColor(activeTab) }
           ]}
-          onPress={() => setIsAddGoalModalVisible(true)}>
+          onPress={handleAddNew}>
           <PlusCircle size={20} color="#FFF" />
           <Text style={styles.addButtonText}>
             {activeTab === 'goals' ? 'Add New Goal' : 
@@ -421,6 +444,12 @@ export default function GoalsScreen() {
         visible={isAddGoalModalVisible}
         onClose={() => setIsAddGoalModalVisible(false)}
         onSave={handleAddGoal}
+      />
+
+      <AddExposureModal
+        visible={isAddExposureModalVisible}
+        onClose={() => setIsAddExposureModalVisible(false)}
+        onSave={handleAddExposure}
       />
     </SafeAreaView>
   );
