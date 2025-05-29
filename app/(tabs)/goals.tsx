@@ -63,73 +63,10 @@ export default function GoalsScreen() {
     }
   };
 
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.tabContainer}>
-        <Pressable
-          onPress={() => setActiveTab('goals')}
-          style={[
-            styles.tab,
-            activeTab === 'goals' && { backgroundColor: colors.success + '20' }
-          ]}>
-          <Text 
-            style={[
-              styles.tabText,
-              { color: activeTab === 'goals' ? colors.success : colors.muted }
-            ]}>
-            Goals
-          </Text>
-        </Pressable>
-        
-        <Pressable
-          onPress={() => setActiveTab('exposures')}
-          style={[
-            styles.tab,
-            activeTab === 'exposures' && { backgroundColor: colors.accent + '20' }
-          ]}>
-          <Text 
-            style={[
-              styles.tabText,
-              { color: activeTab === 'exposures' ? colors.accent : colors.muted }
-            ]}>
-            Exposures
-          </Text>
-        </Pressable>
-        
-        <Pressable
-          onPress={() => setActiveTab('check-ins')}
-          style={[
-            styles.tab,
-            activeTab === 'check-ins' && { backgroundColor: colors.warning + '20' }
-          ]}>
-          <Text 
-            style={[
-              styles.tabText,
-              { color: activeTab === 'check-ins' ? colors.warning : colors.muted }
-            ]}>
-            Check-ins
-          </Text>
-        </Pressable>
-      </View>
-
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
-        
-        <View style={styles.headerSection}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
-            {activeTab === 'goals' ? 'Your Goals' : 
-             activeTab === 'exposures' ? 'Exposure Exercises' : 'Daily Check-ins'}
-          </Text>
-          <Text style={[styles.headerSubtitle, { color: colors.muted }]}>
-            {activeTab === 'goals' ? 'Track your progress towards recovery goals' : 
-             activeTab === 'exposures' ? 'Practice facing challenging situations' : 
-             'Monitor behaviors and symptoms'}
-          </Text>
-        </View>
-        
-        {activeTab === 'goals' && (
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'goals':
+        return (
           <>
             <View style={styles.goalsSection}>
               <View style={styles.sectionHeader}>
@@ -282,9 +219,10 @@ export default function GoalsScreen() {
               ))}
             </View>
           </>
-        )}
-        
-        {activeTab === 'exposures' && (
+        );
+      
+      case 'exposures':
+        return (
           <View style={styles.exposuresSection}>
             <View 
               style={[
@@ -355,9 +293,10 @@ export default function GoalsScreen() {
               </Pressable>
             </View>
           </View>
-        )}
-        
-        {activeTab === 'check-ins' && (
+        );
+      
+      case 'check-ins':
+        return (
           <View style={styles.checkInsSection}>
             <Text style={[styles.checkInsDescription, { color: colors.muted }]}>
               Track behaviors and symptoms to monitor your progress. Daily check-ins help identify patterns and triggers.
@@ -420,7 +359,64 @@ export default function GoalsScreen() {
               </Pressable>
             </View>
           </View>
-        )}
+        );
+    }
+  };
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={styles.tabContainer}>
+        <Pressable
+          onPress={() => setActiveTab('goals')}
+          style={[
+            styles.tab,
+            activeTab === 'goals' && { backgroundColor: colors.success + '20' }
+          ]}>
+          <Text 
+            style={[
+              styles.tabText, 
+              { color: activeTab === 'goals' ? colors.success : colors.muted }
+            ]}>
+            Goals
+          </Text>
+        </Pressable>
+        
+        <Pressable
+          onPress={() => setActiveTab('exposures')}
+          style={[
+            styles.tab,
+            activeTab === 'exposures' && { backgroundColor: colors.accent + '20' }
+          ]}>
+          <Text 
+            style={[
+              styles.tabText, 
+              { color: activeTab === 'exposures' ? colors.accent : colors.muted }
+            ]}>
+            Exposures
+          </Text>
+        </Pressable>
+        
+        <Pressable
+          onPress={() => setActiveTab('check-ins')}
+          style={[
+            styles.tab,
+            activeTab === 'check-ins' && { backgroundColor: colors.warning + '20' }
+          ]}>
+          <Text 
+            style={[
+              styles.tabText, 
+              { color: activeTab === 'check-ins' ? colors.warning : colors.muted }
+            ]}>
+            Check-ins
+          </Text>
+        </Pressable>
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
+        {renderContent()}
       </ScrollView>
       
       <View style={[styles.addButtonContainer, { backgroundColor: colors.background }]}>
