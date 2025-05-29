@@ -13,6 +13,7 @@ import Colors from '@/constants/Colors';
 import { goals } from '@/utils/sampleData';
 import AddGoalModal from '@/components/AddGoalModal';
 import AddExposureModal from '@/components/AddExposureModal';
+import AddCheckInModal from '@/components/AddCheckInModal';
 
 export default function GoalsScreen() {
   const colorScheme = useColorScheme();
@@ -20,6 +21,7 @@ export default function GoalsScreen() {
   const [activeTab, setActiveTab] = useState<'goals' | 'exposures' | 'check-ins'>('goals');
   const [isAddGoalModalVisible, setIsAddGoalModalVisible] = useState(false);
   const [isAddExposureModalVisible, setIsAddExposureModalVisible] = useState(false);
+  const [isAddCheckInModalVisible, setIsAddCheckInModalVisible] = useState(false);
   
   const getTabColor = (tab: 'goals' | 'exposures' | 'check-ins') => {
     switch (tab) {
@@ -55,11 +57,25 @@ export default function GoalsScreen() {
     setIsAddExposureModalVisible(false);
   };
 
+  const handleAddCheckIn = (checkInData: {
+    type: string;
+    mood: string;
+    anxiety_level: number;
+    behaviors: string[];
+    coping_skills_used: string[];
+    notes: string;
+  }) => {
+    console.log('New check-in data:', checkInData);
+    setIsAddCheckInModalVisible(false);
+  };
+
   const handleAddNew = () => {
     if (activeTab === 'goals') {
       setIsAddGoalModalVisible(true);
     } else if (activeTab === 'exposures') {
       setIsAddExposureModalVisible(true);
+    } else if (activeTab === 'check-ins') {
+      setIsAddCheckInModalVisible(true);
     }
   };
 
@@ -448,6 +464,12 @@ export default function GoalsScreen() {
         visible={isAddExposureModalVisible}
         onClose={() => setIsAddExposureModalVisible(false)}
         onSave={handleAddExposure}
+      />
+
+      <AddCheckInModal
+        visible={isAddCheckInModalVisible}
+        onClose={() => setIsAddCheckInModalVisible(false)}
+        onSave={handleAddCheckIn}
       />
     </SafeAreaView>
   );
