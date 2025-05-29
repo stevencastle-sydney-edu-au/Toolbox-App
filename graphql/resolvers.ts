@@ -1,7 +1,10 @@
 import { recentActivities, upcomingItems, progressStats, mealPlans, thoughtLogs, goals } from '@/utils/sampleData';
 
-// In-memory storage for food entries
+// In-memory storage
 let foodEntries = [...recentActivities.filter(activity => activity.type === 'food')];
+let thoughtEntries = [...thoughtLogs];
+let goalEntries = [...goals];
+let mealPlanEntries = [...mealPlans];
 
 export const resolvers = {
   Query: {
@@ -23,9 +26,9 @@ export const resolvers = {
           tags: [],
         }));
     },
-    thoughtLogs: () => thoughtLogs,
-    goals: () => goals,
-    mealPlans: () => mealPlans,
+    thoughtLogs: () => thoughtEntries,
+    goals: () => goalEntries,
+    mealPlans: () => mealPlanEntries,
     recentActivities: (_, { date }) => {
       return [...foodEntries, ...recentActivities.filter(activity => activity.type !== 'food')]
         .filter(activity => activity.date === date);
@@ -34,11 +37,9 @@ export const resolvers = {
   },
   Mutation: {
     login: (_, { email }) => {
-      // Mock login response
       return { token: null };
     },
     verifyCode: (_, { code }) => {
-      // Mock verification response
       return { token: 'mock_token' };
     },
     addFoodEntry: (_, { input }) => {
@@ -49,9 +50,7 @@ export const resolvers = {
         date: new Date().toISOString().split('T')[0],
       };
       
-      // Add to in-memory storage
       foodEntries.push(newEntry);
-      
       return newEntry;
     },
     addThoughtLog: (_, { input }) => {
@@ -62,6 +61,8 @@ export const resolvers = {
         afterEmotionIntensity: Math.floor(input.emotionIntensity / 2),
         ...input,
       };
+      
+      thoughtEntries.push(newLog);
       return newLog;
     },
     addGoal: (_, { input }) => {
@@ -75,20 +76,23 @@ export const resolvers = {
         })),
         ...input,
       };
+      
+      goalEntries.push(newGoal);
       return newGoal;
     },
     updateGoalStep: (_, { goalId, stepId, completed }) => {
-      const goal = goals.find(g => g.id === goalId);
-      if (!goal) throw new Error('Goal not found');
+      const goalIndex = goalEntries.findIndex(g => g.id === goalId);
+      if (goalIndex === -1) throw new Error('Goal not found');
       
+      const goal = goalEntries[goalIndex];
       const updatedSteps = goal.steps.map(step =>
         step.id === stepId ? { ...step, completed } : step
       );
       
-      return {
-        ...goal,
-        steps: updatedSteps,
-      };
+      const updatedGoal = { ...goal, steps: updatedSteps };
+      goalEntries[goalIndex] = updatedGoal;
+      
+      return updatedGoal;
     },
     createMealPlan: (_, { input }) => {
       const newPlan = {
@@ -100,6 +104,8 @@ export const resolvers = {
           ...meal,
         })),
       };
+      
+      mealPlanEntries.push(newPlan);
       return newPlan;
     },
   },
